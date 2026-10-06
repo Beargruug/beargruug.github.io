@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="kanagawa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fabian Scheid (beargruug)</title>
+<meta name="description" content="Fabian Scheid, developer at Refine Studio. Coffee, cats, and Neovim.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* kanagawa wave, with ColorMyPencils (Normal bg = none) on ghostty's #000000 */
+[data-theme="kanagawa"]{
+  --bg:#000000; --fg:#DCD7BA; --gutter:#2A2A37; --nr:#54546D; --cnr:#FF9E3B; --cc:#2A2A37; --eob:#1F1F28;
+  --tl:#16161D; --tlfg:#938AA9; --tls:#2A2A37; --tlsfg:#C8C093; --tlf:#1F1F28;
+  --slbg:#16161D; --slfg:#C8C093; --float:#000000; --border:#54546D; --title:#938AA9; --sel:#223249; --cursor:#e0def4;
+  --com:#727169; --kw:#957FB8; --ret:#FF5D62; --fn:#7E9CD8; --str:#98BB6C; --num:#D27E99; --fld:#E6C384;
+  --op:#C0A36E; --const:#FFA066; --spc:#7FB4CA; --head:#7E9CD8;
+  --err:#E82424; --warn:#FF9E3B; --ok:#98BB6C; --add:#76946A; --chg:#DCA561;
+}
+[data-theme="dragon"]{
+  --bg:#000000; --fg:#c5c9c5; --gutter:#282727; --nr:#625e5a; --cnr:#FF9E3B; --cc:#282727; --eob:#181616;
+  --tl:#0d0c0c; --tlfg:#7a8382; --tls:#282727; --tlsfg:#C8C093; --tlf:#181616;
+  --slbg:#0d0c0c; --slfg:#C8C093; --float:#000000; --border:#625e5a; --title:#7a8382; --sel:#2d4f67; --cursor:#e0def4;
+  --com:#737c73; --kw:#8992a7; --ret:#c4746e; --fn:#8ba4b0; --str:#8a9a7b; --num:#a292a3; --fld:#c4b28a;
+  --op:#9e9b93; --const:#b6927b; --spc:#949fb5; --head:#8ba4b0;
+  --err:#E82424; --warn:#FF9E3B; --ok:#87a987; --add:#76946A; --chg:#DCA561;
+}
+[data-theme="lotus"]{
+  --bg:#f2ecbc; --fg:#545464; --gutter:#e7dba0; --nr:#a09cac; --cnr:#e98a00; --cc:#e7dba0; --eob:#f2ecbc;
+  --tl:#d5cea3; --tlfg:#766b90; --tls:#e7dba0; --tlsfg:#43436c; --tlf:#f2ecbc;
+  --slbg:#d5cea3; --slfg:#43436c; --float:#e7dba0; --border:#a09cac; --title:#766b90; --sel:#c9cbd1; --cursor:#43436c;
+  --com:#8a8980; --kw:#624c83; --ret:#c84053; --fn:#4d699b; --str:#6f894e; --num:#b35b79; --fld:#77713f;
+  --op:#836f4a; --const:#cc6d00; --spc:#6693bf; --head:#4d699b;
+  --err:#e82424; --warn:#e98a00; --ok:#6f894e; --add:#6e915f; --chg:#de9800;
+}
+[data-theme="rosepine"]{
+  --bg:#000000; --fg:#e0def4; --gutter:transparent; --nr:#6e6a86; --cnr:#e0def4; --cc:#2a273f; --eob:#232136;
+  --tl:#2a273f; --tlfg:#908caa; --tls:#393552; --tlsfg:#e0def4; --tlf:#000000;
+  --slbg:#2a273f; --slfg:#908caa; --float:#000000; --border:#56526e; --title:#9ccfd8; --sel:#393552; --cursor:#e0def4;
+  --com:#6e6a86; --kw:#3e8fb0; --ret:#3e8fb0; --fn:#ea9a97; --str:#f6c177; --num:#f6c177; --fld:#9ccfd8;
+  --op:#908caa; --const:#f6c177; --spc:#9ccfd8; --head:#c4a7e7;
+  --err:#eb6f92; --warn:#f6c177; --ok:#9ccfd8; --add:#9ccfd8; --chg:#ea9a97;
+}
+:root{--lh:23px; --gw:6ch}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--fg)}
+body{font:15px/var(--lh) "JetBrains Mono",ui-monospace,Menlo,monospace;font-feature-settings:"calt" 0,"liga" 0;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+input{font:inherit;color:var(--fg);background:none;border:0;outline:none;caret-color:var(--cursor);min-width:0}
+a{color:inherit}
+:focus-visible{outline:1px solid var(--cnr);outline-offset:1px}
+
+#app{height:100dvh;display:flex;flex-direction:column}
+#nvim{flex:1;display:flex;flex-direction:column;position:relative;min-height:0}
+#win{flex:1;position:relative;overflow:hidden}
+#buf{position:absolute;inset:0;overflow:auto;scrollbar-width:none}
+#buf::-webkit-scrollbar{display:none}
+.lines{min-width:100%;width:max-content}
+
+.ln{display:grid;grid-template-columns:2ch 4ch auto;height:var(--lh);white-space:pre;cursor:text}
+.ln.real{background:linear-gradient(to right,var(--gutter) 0 var(--gw),transparent var(--gw) calc(var(--gw) + 79ch),var(--cc) calc(var(--gw) + 79ch) calc(var(--gw) + 80ch),transparent 0)}
+.ln .sg{text-align:center}
+.ln .nr{text-align:right;padding-right:1ch;color:var(--nr);user-select:none}
+.ln .nr.cnr{color:var(--cnr);font-weight:700}
+.ln.eob{display:block;color:var(--eob);cursor:default}
+.cu{background:var(--cursor);color:var(--bg)}
+.nonu{--gw:2ch}
+.nonu .ln{grid-template-columns:2ch 0 auto}
+.nonu .nr{display:none}
+.nocc{--cc:transparent}
+
+.t-h{color:var(--head);font-weight:700} .t-b{font-weight:700}
+.t-k{color:var(--kw)} .t-r{color:var(--ret)} .t-f{color:var(--fn)} .t-s{color:var(--str)} .t-n{color:var(--num)}
+.t-v{color:var(--fld)} .t-o{color:var(--op)} .t-x{color:var(--const)} .t-c{color:var(--com)} .t-m,.t-t{color:var(--spc)}
+.t-ok{color:var(--ok)} .t-er{color:var(--err)} .t-wa{color:var(--warn)}
+.t-im{color:var(--spc)} .t-il{color:var(--fn)} .t-it{color:var(--com)}
+.t-url{color:var(--spc);text-decoration:underline} .t-surl{color:var(--str);text-decoration:underline}
+.s-add{color:var(--add)} .s-chg{color:var(--chg)}
+
+/* tabline (showtabline=2) */
+#tabline{display:flex;height:var(--lh);background:var(--tlf);white-space:pre;overflow-x:auto;scrollbar-width:none;flex:none}
+#tabline::-webkit-scrollbar{display:none}
+.tab{display:flex;background:var(--tl);color:var(--tlfg);flex:none}
+.tab.on{background:var(--tls);color:var(--tlsfg);font-weight:700}
+.tab button{padding:0 1ch}
+.tab .tcl{padding:0 1ch 0 0;color:var(--nr);font-weight:400}
+.tab .tcl:hover{color:var(--err)}
+.tab:not(.on):hover{color:var(--tlsfg)}
+.zen #tabline{display:none}
+
+/* nvim :intro */
+#intro{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;pointer-events:none;padding:1rem;text-align:center}
+#intro[hidden]{display:none}
+#intro>*{pointer-events:auto}
+.in-name{font-size:2.2em;line-height:1.2;font-weight:700;margin-bottom:.6rem}
+.in-sub{color:var(--fg)}
+.in-list{margin-top:var(--lh);text-align:left;white-space:pre}
+.in-list button{display:block;line-height:var(--lh)}
+.in-list button:hover .k{text-decoration:underline}
+.in-list .k,.mlbl{color:var(--spc)}
+.mlbl{display:none}
+
+/* statusline, cmdline */
+#status{display:flex;height:var(--lh);background:var(--slbg);color:var(--slfg);white-space:pre;overflow:hidden;position:relative;flex:none}
+#status .fill{flex:1}
+#status>*{padding:0 1ch}
+.hp{padding:0 .6ch!important;color:var(--nr)}
+.hp.on{color:var(--slfg);font-weight:700}
+.hp:hover{color:var(--fg)}
+.low{color:var(--err)}
+.walker{position:absolute;top:0;animation:walk 9s linear forwards;padding:0!important}
+@keyframes walk{from{left:-8ch}to{left:100%}}
+#cmd{display:flex;height:var(--lh);padding-right:1ch;white-space:pre;cursor:text;flex:none}
+#cmd .p{color:var(--fg)}
+#cmdin{flex:1;display:none}
+#cmd.active #cmdin{display:block}
+#cmd.active #msg{display:none}
+#msg{flex:1;overflow:hidden;text-overflow:ellipsis}
+#msg.err{color:var(--err)}
+#msg.mode{color:var(--warn);font-weight:700}
+#showcmd{color:var(--fg);min-width:11ch;text-align:left}
+
+/* fidget */
+#fidget{position:absolute;right:1ch;bottom:.3rem;text-align:right;pointer-events:none;z-index:3}
+.fn{white-space:pre;transition:opacity .4s;background:var(--bg);display:inline-block;padding-left:1ch}
+#fidget>.fn{display:block;margin-left:auto;width:max-content}
+.fn.out{opacity:0}
+.fn .fs{color:var(--com)}
+.fn.warn .fm{color:var(--warn)}
+
+/* floats: telescope + harpoon */
+.float{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center}
+.float[hidden]{display:none}
+.pane{position:relative;border:1px solid var(--border);border-radius:6px;background:var(--float);min-height:0;min-width:0}
+.ptitle{position:absolute;top:calc(var(--lh) / -2);left:50%;transform:translateX(-50%);background:var(--float);color:var(--title);font-weight:700;padding:0 .6ch;white-space:pre}
+.tp{width:min(140ch,86%);height:80%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:.5rem 1ch}
+.tp.nopreview{grid-template-columns:1fr;width:min(90ch,86%)}
+.tp.nopreview .preview{display:none}
+.results{grid-column:1;grid-row:1}
+.results ul{list-style:none;height:100%;overflow:auto;display:flex;flex-direction:column;justify-content:flex-end;padding:.3rem 0;scrollbar-width:none}
+.results li{white-space:pre;overflow:hidden;padding-right:1ch;cursor:pointer;flex:none}
+.results li.sel{background:var(--sel)}
+.results li .car{color:var(--ret)}
+.results li .hl{color:var(--spc);font-weight:700}
+.prompt{grid-column:1;grid-row:2;display:flex;padding:.2rem 1ch}
+.prompt .pp{color:var(--fld);white-space:pre}
+input:focus-visible{outline:none}
+.prompt input{flex:1}
+.prompt .cnt{color:var(--nr)}
+.preview{grid-column:2;grid-row:1/3;overflow:hidden}
+.preview pre{font:inherit;padding:calc(var(--lh) / 2) 1ch .3rem;overflow:hidden;height:100%}
+.hbox{width:min(60ch,90%);padding:.4rem 0}
+.hbox ol{list-style:none}
+.hbox li{display:grid;grid-template-columns:4ch auto;white-space:pre;cursor:pointer}
+.hbox li .nr{text-align:right;padding-right:1ch;color:var(--nr)}
+.hbox li.sel .nr{color:var(--cnr);font-weight:700}
+.hbox li:hover{background:var(--sel)}
+
+/* typing test */
+.mtbox{width:min(72ch,92%);padding:calc(var(--lh) / 2) 2ch .6rem;cursor:text}
+#mtinfo{color:var(--warn);font-weight:700;min-height:var(--lh)}
+#mtinfo .dim{color:var(--com);font-weight:400}
+#mtwords{height:calc(var(--lh) * 3);overflow:hidden;white-space:pre-wrap;word-break:keep-all;margin:.3rem 0;font-size:1.15em;line-height:var(--lh)}
+#mtwords .u{color:var(--com)} #mtwords .w{color:var(--err)} #mtwords .wsp{background:var(--err);opacity:.5}
+#mthint{color:var(--com);min-height:var(--lh);white-space:pre-wrap}
+#mtinfo{white-space:pre}
+#mtinfo.won{color:var(--ok)}
+.mtres{white-space:pre;font-size:.87em}
+.mtres .you{color:var(--ok)} .mtres .lost{color:var(--err)} .mtres .me{color:var(--fn)} .mtres .lbl{color:var(--fg)}
+.mtsend{display:inline-block;margin-top:.3rem;padding:0 1ch;border:1px solid var(--ok);border-radius:4px;color:var(--ok);text-decoration:none}
+.mtsend:hover{background:var(--ok);color:var(--bg)}
+#mtin{position:absolute;opacity:0;width:1px;height:1px;left:0;top:0}
+
+/* zen-mode */
+.zen #buf{left:max(0px,calc(50% - max(25%,44ch)));right:max(0px,calc(50% - max(25%,44ch)))}
+.zen #status{display:none}
+
+/* zsh after :q! */
+#shell{position:absolute;inset:0;background:var(--bg);padding:0 1ch;z-index:8;white-space:pre-wrap;overflow:auto;cursor:text}
+#shell[hidden]{display:none}
+#shell .pr{color:var(--fg)}
+#shell .row{display:flex}
+#shin{flex:1}
+#shell .dim{color:var(--com)}
+
+/* tmux */
+#tmux{display:flex;height:var(--lh);background:#333333;color:#5eacd3;white-space:pre;flex:none;overflow:hidden}
+
+@media (max-width:720px){
+  body{font-size:13.5px}
+  :root{--lh:21px}
+  .hn,.hide-sm{display:none}
+  .ln{height:auto;min-height:var(--lh)}
+  .ln .tx{white-space:pre-wrap;word-break:break-word}
+  .lines{width:100%}
+  .in-list .d,.in-list .k{display:none}
+  .mlbl{display:inline;text-decoration:underline;text-underline-offset:3px}
+  .in-list{text-align:center}
+  .in-list button{display:block;width:100%;text-align:center;line-height:calc(var(--lh) * 1.6)}
+  .in-name{font-size:1.8em}
+  .tp{grid-template-columns:1fr;width:94%}
+  .tp .preview{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .fn{transition:none} }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="nvim">
+    <nav id="tabline" aria-label="Tabs"></nav>
+    <div id="win">
+      <div id="buf"></div>
+      <div id="intro" hidden></div>
+      <div id="fidget" aria-live="polite"></div>
+      <div id="tele" class="float" hidden>
+        <div class="tp" role="dialog" aria-label="Telescope">
+          <div class="pane results"><div class="ptitle">Results</div><ul id="tlist"></ul></div>
+          <div class="pane prompt"><div class="ptitle" id="ttitle"></div><span class="pp">&gt; </span><input id="tin" autocomplete="off" spellcheck="false" aria-label="Search"><span class="cnt" id="tcnt"></span></div>
+          <div class="pane preview"><div class="ptitle" id="ptitle">Preview</div><pre id="tprev"></pre></div>
+        </div>
+      </div>
+      <div id="mt" class="float" hidden>
+        <div class="pane mtbox" role="dialog" aria-label="Typing test"><div class="ptitle">monkeytype</div>
+          <div id="mtinfo"></div><div id="mtwords"></div><div id="mthint"></div>
+          <input id="mtin" aria-label="Type the words" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+      <div id="harp" class="float" hidden>
+        <div class="pane hbox" role="dialog" aria-label="Harpoon"><div class="ptitle">Harpoon</div><ol id="hlist"></ol></div>
+      </div>
+    </div>
+    <div id="status"></div>
+    <div id="cmd"><span class="p"></span><input id="cmdin" aria-label="Command line" autocomplete="off" autocapitalize="off" spellcheck="false"><span id="msg"></span><span id="showcmd" class="hide-sm"></span></div>
+    <div id="shell" hidden></div>
+  </div>
+  <div id="tmux"><span id="twin">[fabian] 1:nvim*</span><span style="flex:1"></span><span id="clock"></span></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const GH = "https://github.com/Beargruug";
+const t0 = performance.now();
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const LH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lh")) || 23;
+
+const state = {
+  open: [], tabs: [null], tab: 0, cur: null, pos: {}, mode: "NORMAL", seq: "", count: "",
+  harpoon: ["about.md", "projects.lua", "bootdev.md", "monkeytype.lua", "contact.md", "coffee.lua"],
+  theme: "kanagawa", coffee: 72, cups: 0, touched: false, warned: false,
+  zen: 0, hardtime: true, lsp: false, hard: {k: "", n: 0, t: 0}, history: []
+};
+
+const THEMES = {"kanagawa":"kanagawa","kanagawa-wave":"kanagawa","kanagawa-dragon":"dragon","kanagawa-lotus":"lotus","rose-pine-moon":"rosepine","rose-pine":"rosepine"};
+
+const PROJECTS = [
+  {name:"skipper.nvim",   about:"Skip through files like a pirate.", lang:"lua", stars:10},
+  {name:"gitpvp",         about:"Repo vs repo, user vs user. Real stats, simulated battles.", lang:"typescript", stars:1},
+  {name:"awesome-coffee", about:"A curated list of coffee resources, tools and guides.", lang:"markdown", stars:3},
+  {name:"runx",           about:null, lang:"go", stars:0},
+  {name:"nvim",           about:"My Neovim config. kanagawa, harpoon, oil, telescope.", lang:"lua", stars:2},
+  {name:".dotfiles",      about:"Ghostty, tmux, AeroSpace, SketchyBar and friends.", lang:"shell", stars:3},
+];
+
+const BD = "https://www.boot.dev";
+const CERT = id => `${BD}/certificates/${id}`;
+const JOURNEY = [
+  {d:"2023-10-10", t:"joined boot.dev"},
+  {d:"2025-12-01", t:"Learn Python for Beginners", url:CERT("86724d34-9381-49f0-9fab-3fc1c4de48ad")},
+  {d:"2025-12-01", t:"Learn Linux", url:CERT("77295781-1d31-43fc-9970-50510afa9318")},
+  {d:"2025-12-02", t:"Learn Git", url:CERT("a63781b6-2791-400c-91d2-2b0738030284")},
+  {d:"2025-12-02", t:"Build a BookBot in Python", url:CERT("5fc51cef-e5d6-4b90-ba1e-e4202d240239"), repo:"bookbot"},
+  {d:"2025-12-03", t:"Learn Object Oriented Programming in Python", url:CERT("75a7afe9-5f78-4d97-bf4f-4571f55ff4a6")},
+  {d:"2025-12-04", t:"Build Asteroids using Python and Pygame", url:CERT("e92c0c73-6e75-459c-8e24-5d0a840ecff0"), repo:"asteroids"},
+  {d:"2025-12-08", t:"Milestone: Master, 480 exercises done"},
+  {d:"2025-12-26", t:"Gold in the Haunted Lich league, 78,382 XP"},
+  {d:"2026-01-07", t:"Learn Functional Programming in Python", url:CERT("f3c89b9a-a090-4341-97d0-d01b5a8c4b20")},
+  {d:"2026-01-16", t:"Build an AI Agent in Python", url:CERT("2490bf72-bc7a-4501-b282-c6729a8c3cfd"), repo:"ai_agent"},
+  {d:"2026-01",    t:"Contest of the Resolute '26, studied every day in January"},
+  {d:"2026-03-04", t:"First Personal Project: skipper.nvim", url:CERT("3c48c0c9-57f8-44a8-bde4-45833fc20205"), repo:"skipper.nvim"},
+  {d:"2026-05-22", t:"Streak: Grandmaster, 144 days in a row"},
+  {d:"2026-06-07", t:"Sharpshooter: Grandmaster, 28 sprees"},
+];
+function sha(str){ let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(16).padStart(8, "0").slice(0, 7); }
+const xpBar = (cur, max, w = 20) => { const f = Math.round(cur / max * w); return "█".repeat(f) + "░".repeat(w - f); };
+
+const MT = {state: "idle", data: null, error: ""};
+const MT_URL = "https://monkeytype.com/profile/Beargruug";
+const clean = v => String(v ?? "").replace(/[{}|]/g, "");
+const bestPB = arr => Array.isArray(arr) && arr.length ? arr.reduce((a, b) => b.wpm > a.wpm ? b : a) : null;
+const mtLevel = xp => Math.floor((1 / 98) * (-151 + Math.sqrt(392 * xp + 22801)) + 1);
+const dur = sec => { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60); return h ? `${h}h ${m}m` : `${m}m`; };
+const rankOf = v => v == null ? null : typeof v === "number" ? v : v.rank;
+async function loadMT(){
+  if (MT.state === "loading" || MT.state === "ok") return;
+  MT.state = "loading";
+  const d = notify("fetching profile", "monkeytype", "", 0), fm = d.querySelector(".fm");
+  try {
+    const r = await fetch("https://api.monkeytype.com/users/Beargruug/profile?isUid=false");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    MT.data = (await r.json()).data;
+    if (!MT.data) throw new Error("empty response");
+    MT.state = "ok"; fm.textContent = "fetching profile ✔";
+  } catch (e){
+    MT.state = "error"; MT.error = e.message || String(e);
+    fm.textContent = "couldn't reach the api"; d.classList.add("warn");
+  }
+  setTimeout(() => fadeOut(d), 1800);
+  if (state.cur === "monkeytype.lua" && state.mode === "NORMAL") renderAll();
+  if (MTT) renderMT();
+}
+const mtPB = (mode, k) => MT.state === "ok" ? bestPB(MT.data.personalBests?.[mode]?.[k]) : null;
+
+/* ---------- buffers ---------- */
+const field = (k, v, w = 5) => `{v|${k}}${" ".repeat(Math.max(0, w - k.length))} {o|=} ${v},`;
+function projectLines(p){
+  return [
+    "    {",
+    "        " + field("name", `{s|"${p.name}"}`),
+    p.about ? "        " + field("about", `{s|"${p.about}"}`) : "        {v|about} {o|=} {x|nil}, {c|-- read the source}",
+    "        " + field("lang", `{s|"${p.lang}"}`) + ` {v|stars} {o|=} {n|${p.stars}},`,
+    "        " + field("url", `{A:${GH}/${p.name}|"github.com/Beargruug/${p.name}"}`),
+    "    },",
+  ];
+}
+function H(title, tag){ return `{h|${title}}` + " ".repeat(Math.max(1, 78 - title.length - tag.length - 2)) + `{t|*${tag}*}`; }
+
+const FILES = [".cat", "about.md", "bootdev.md", "coffee.lua", "contact.md", "monkeytype.lua", "projects.lua"];
+const ICON = f => f.endsWith(".lua") ? "{il|☾}" : f.endsWith(".md") ? "{im|#}" : "{it|·}";
+
+const B = {
+  "about.md": {ft:"markdown", lines:() => [
+    "{h|# Fabian Scheid}",
+    "",
+    "Developer at {b|**Refine Studio**}, based in Germany.",
+    "I like coffee, cats, and code that reads well.",
+    "",
+    "{h|## What I do}",
+    "{m|-} Build things for the web and the terminal",
+    "{m|-} Write Neovim plugins when an itch gets bad enough",
+    "{m|-} Tweak my dotfiles more often than I'd admit",
+    "",
+    "{h|## Right now}",
+    "Exploring new tools and getting a little better",
+    "at the craft every day. Lately that means the",
+    "courses on {a:buf:bootdev.md|boot.dev} (put the cursor here, press gx).",
+    "",
+    "{h|## Setup}",
+    "{m|-} Neovim with kanagawa, telescope, harpoon and oil",
+    "{m|-} Ghostty and tmux, sessions via tmux-sessionizer",
+    "{m|-} macOS with AeroSpace and SketchyBar",
+    "",
+    "{c|<!-- new here? j and k move, :help explains the rest -->}",
+  ], signs:() => ({12:["/","s-chg"],13:["+","s-add"],15:["+","s-add"],16:["+","s-add"],17:["+","s-add"],18:["+","s-add"]})},
+
+  "projects.lua": {ft:"lua", lines:() => [
+    "{c|-- things I've built. put the cursor on a url and press gx.}",
+    "{c|-- course projects from boot.dev live in bootdev.md}",
+    "",
+    "{r|return} {",
+    ...PROJECTS.flatMap(projectLines),
+    "}",
+  ]},
+
+  "coffee.lua": {ft:"lua", lines:() => [
+    "{c|-- fuel management}",
+    "{k|local} M {o|=} {}",
+    "",
+    `M.{v|cups_this_visit} {o|=} {n|${state.cups}}`,
+    `M.{v|level} {o|=} {n|${Math.round(state.coffee)}} {c|-- percent, see the statusline}`,
+    "",
+    "{c|-- a curated list of coffee resources, tools and guides}",
+    `M.{v|reading} {o|=} {A:${GH}/awesome-coffee|"github.com/Beargruug/awesome-coffee"}`,
+    "",
+    "{k|function} M.{f|refill}()",
+    "    {c|-- type :coffee to run this}",
+    "    M.{v|level} {o|=} {n|100}",
+    "    M.{v|cups_this_visit} {o|=} M.{v|cups_this_visit} {o|+} {n|1}",
+    "{k|end}",
+    "",
+    "{r|return} M",
+  ], signs:() => { const s = {}; if (state.cups) s[3] = ["/","s-chg"]; if (state.touched) s[4] = ["/","s-chg"]; return s; }},
+
+  "bootdev.md": {ft:"markdown", lines:() => [
+    "{h|# boot.dev}",
+    "",
+    "Learning backend development on boot.dev since October 2023.",
+    `{c|<!-- snapshot of my profile, the live one is at -->}`,
+    `{a:${BD}/u/beargruug|${BD}/u/beargruug}`,
+    "",
+    "{h|## Stats}",
+    "{m|-} level:        {n|58} (Scholar)",
+    `{m|-} next level:   {ok|${xpBar(1760, 4960)}} {n|1,760} / {n|4,960} XP`,
+    "{m|-} lessons:      {n|737} solved",
+    "{m|-} xp:           {n|152,240} earned",
+    "{m|-} leaderboard:  top {n|8.5%}",
+    "",
+    "{h|## Journey}",
+    "{c|<!-- try :Git log for the same thing, fugitive style -->}",
+    ...JOURNEY.flatMap(j => [
+      `{m|-} {ok|[x]} {n|${j.d.padEnd(10)}}  ${j.url ? `{a:${j.url}|${j.t}}` : j.t}`,
+      ...(j.repo ? [`                   {m|↳} {a:${GH}/${j.repo}|github.com/Beargruug/${j.repo}}`] : []),
+    ]),
+  ]},
+
+  "gitlog": {ft:"git", title:"fugitive:///home/fabian/.git//log", lines:() => [
+    ...JOURNEY.slice().reverse().map((j, i) =>
+      `{v|${sha(j.d + j.t)}} ${i === 0 ? "{t|(HEAD -> main)} " : ""}{n|${j.d.padEnd(10)}} ${j.url ? `{a:${j.url}|${j.t}}` : j.t}`),
+    "",
+    "{c|# 15 commits. press gx on a line to open the certificate.}",
+  ]},
+
+  "monkeytype.lua": {ft:"lua", lines:() => {
+    const url = `{A:${MT_URL}|"monkeytype.com/profile/Beargruug"}`;
+    const tail = ["", "{c|-- think you're faster? run :Monkeytype}"];
+    if (MT.state !== "ok") return [
+      "{c|-- live from api.monkeytype.com}",
+      MT.state === "error" ? `{c|-- couldn't load it (${clean(MT.error)}), it lives here:}` : "{c|-- fetching...}",
+      "",
+      `{r|return} { {v|url} {o|=} ${url} }`,
+      ...tail,
+    ];
+    const D = MT.data, ts = D.typingStats || {}, W = 15;
+    const F = (k, v) => "    " + field(k, v, W);
+    const pbs = mode => ["15", "30", "60", "120", "10", "25", "50", "100"]
+      .map(k => [k, mtPB(mode, k)]).filter(([, b]) => b)
+      .map(([k, b]) => `            [{n|${k}}] {o|=} {s|"${Math.round(b.wpm)} wpm, ${Math.round(b.acc)}% acc"},`);
+    const tPB = pbs("time"), wPB = pbs("words");
+    const r15 = rankOf(D.allTimeLbs?.time?.["15"]?.english), r60 = rankOf(D.allTimeLbs?.time?.["60"]?.english);
+    return [
+      "{c|-- live from api.monkeytype.com, fetched just now}",
+      "",
+      "{r|return} {",
+      F("name", `{s|"${clean(D.name)}"}`),
+      F("level", `{n|${mtLevel(D.xp || 0)}}`) + ` {c|-- ${(D.xp || 0).toLocaleString("en-US")} xp}`,
+      ...(ts.startedTests != null ? [F("tests_started", `{n|${ts.startedTests}}`)] : []),
+      ...(ts.completedTests != null ? [F("tests_done", `{n|${ts.completedTests}}`)] : []),
+      ...(ts.timeTyping != null ? [F("time_typing", `{s|"${dur(ts.timeTyping)}"}`)] : []),
+      ...(D.maxStreak ? [F("streak", `{n|${D.streak || 0}}`) + ` {c|-- best: ${D.maxStreak} days}`] : []),
+      ...(D.details?.keyboard ? [F("keyboard", `{s|"${clean(D.details.keyboard)}"}`)] : []),
+      ...(r15 ? [F("rank_15s", `{n|${r15}}`) + " {c|-- all-time, english}"] : []),
+      ...(r60 ? [F("rank_60s", `{n|${r60}}`) + " {c|-- all-time, english}"] : []),
+      "    {v|personal_bests} {o|=} {",
+      ...(tPB.length ? ["        {v|time} {o|=} {", ...tPB, "        },"] : []),
+      ...(wPB.length ? ["        {v|words} {o|=} {", ...wPB, "        },"] : []),
+      ...(!tPB.length && !wPB.length ? ["        {c|-- none public yet}"] : []),
+      "    },",
+      F("url", url),
+      "}",
+      ...tail,
+    ];
+  }},
+
+  "contact.md": {ft:"markdown", lines:() => [
+    "{h|# Say hello}",
+    "",
+    "Email is the most reliable way to reach me.",
+    "",
+    "{m|-} mail:     {a:mailto:info@fabianmail.com|info@fabianmail.com}",
+    `{m|-} github:   {a:${GH}|https://github.com/Beargruug}`,
+    "{m|-} x:        {a:https://x.com/Beargruug|https://x.com/Beargruug}",
+    "{m|-} sponsor:  {a:https://github.com/sponsors/Beargruug|https://github.com/sponsors/Beargruug}",
+  ]},
+
+  ".cat": {ft:"text", lines:() => [
+    " /\\_/\\",
+    "( -.- )  zzz",
+    " > ^ <",
+    "",
+    "{c|this cat is asleep. :cat lets it out for a walk.}",
+  ]},
+
+  "help.txt": {ft:"help", lines:() => [
+    "{t|*fabian.txt*}     For Neovim users and everyone else",
+    "",
+    H("MOVING AROUND", "fabian-motions"),
+    "  {f|j} {f|k} {f|h} {f|l}         move (counts work, try 5j)",
+    "  {f|w} {f|b} {f|0} {f|$}         words, start and end of line",
+    "  {f|gg} {f|G}              top and bottom",
+    "  {f|<C-d>} {f|<C-u>}       half a page, centered",
+    "  {f|gt} {f|gT}              next and previous tab",
+    "  {f|gx} {f|<Enter>}        open the link on this line",
+    "",
+    H("NAVIGATION", "fabian-navigation"),
+    "  {f|<C-e>}             harpoon menu",
+    "  {f|<C-t>} {f|<C-g>} {f|<C-b>} {f|<C-n>}   harpoon marks 1 to 4 (the rest are in the menu)",
+    "                    {c|your browser may keep <C-t> and <C-n> for itself}",
+    "  {f|<leader>a}         add this file to harpoon",
+    "  {f|-} {f|<leader>sf}      oil",
+    "  {f|<C-p>}             git files",
+    "  {f|<leader>vf}        find files",
+    "  {f|<leader>cb}        buffers",
+    "  {f|<leader>/}         search this buffer",
+    "  {f|<leader>vh}        help tags",
+    "  {f|<C-f>}             tmux-sessionizer (my projects)",
+    "  {f|<leader>zz}        zen mode ({f|<leader>zZ} for the quiet one)",
+    "",
+    "  {f|<leader>} is {f|<Space>}.",
+    "",
+    H("COMMANDS", "fabian-commands"),
+    "  {f|:e} {s|about.md}              open a file",
+    "  {f|:coffee}                    refill",
+    "  {f|:cat}                       let the cat out",
+    "  {f|:colorscheme} {s|kanagawa}       also kanagawa-dragon,",
+    "                             kanagawa-lotus, rose-pine-moon",
+    "  {f|:Telescope colorscheme}     try them with a live preview",
+    "  {f|:Git log}                   my boot.dev journey, as commits",
+    "  {f|:Monkeytype}                15s typing test against my pb",
+    "  {f|:checkhealth}               see how I'm doing",
+    "  {f|:Hardtime toggle}           stop the j-spam police",
+    "  {f|:tabc} {f|:tabn} {f|:tabp}          close, next, previous tab",
+    "  {f|:q}                         go on, try it",
+    "",
+    H("NOT A VIM PERSON?", "fabian-mouse"),
+    "  Everything you open gets its own tab at the top. Click a tab",
+    "  to switch, the × to close it. The numbers in the statusline,",
+    "  links and files are all clickable too.",
+    "",
+    "{c|vim:tw=78:ts=8:ft=help:norl:}",
+  ]},
+
+  "checkhealth": {ft:"checkhealth", lines:() => {
+    const lvl = Math.round(state.coffee);
+    return [
+      "{h|==============================================================================}",
+      "{h|fabian:} require(\"fabian.health\").check()",
+      "",
+      "{h|caffeine} ~",
+      lvl > 25 ? `- {ok|OK} level at ${lvl}%` : `- {er|ERROR} level at ${lvl}%`,
+      ...(lvl > 25 ? [] : ["  - ADVICE:", "    - run :coffee"]),
+      "",
+      "{h|cats} ~",
+      "- {ok|OK} one cat found, asleep in the statusline",
+      "",
+      "{h|editor} ~",
+      "- {ok|OK} nvim (btw)",
+      `- {ok|OK} hardtime.nvim is ${state.hardtime ? "watching your j key" : "off"}`,
+      "",
+      "{h|sleep} ~",
+      "- {wa|WARNING} not measured. probably fine.",
+    ];
+  }},
+
+  "oil": {ft:"oil", title:"oil:///home/fabian/", lines:() => FILES.map(f => `${ICON(f)} ${f}`)},
+};
+const title = n => (B[n] && B[n].title) || n;
+
+/* ---------- markup ---------- */
+const RE = /\{(\w+)(?::([^|]+))?\|([^}]*)\}/g;
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const plain = l => l.replace(RE, "$3");
+const urlOf = l => { const m = l.match(/\{[aA]:([^|]+)\|/); return m ? m[1] : null; };
+function toks(line){
+  const out = []; let last = 0, m; RE.lastIndex = 0;
+  while ((m = RE.exec(line))){
+    if (m.index > last) out.push({t: line.slice(last, m.index)});
+    out.push({cls: m[1], url: m[2], t: m[3]});
+    last = RE.lastIndex;
+  }
+  if (last < line.length) out.push({t: line.slice(last)});
+  return out;
+}
+function render(line, col = -1){
+  let html = "", x = 0, placed = false;
+  for (const tk of toks(line)){
+    let inner;
+    if (col >= x && col < x + tk.t.length){
+      const i = col - x;
+      inner = esc(tk.t.slice(0, i)) + `<span class="cu">${esc(tk.t[i])}</span>` + esc(tk.t.slice(i + 1));
+      placed = true;
+    } else inner = esc(tk.t);
+    x += tk.t.length;
+    if (!tk.cls) html += inner;
+    else if ((tk.cls === "a" || tk.cls === "A") && tk.url.startsWith("buf:")) html += `<a class="t-url" href="#" data-buf="${esc(tk.url.slice(4))}">${inner}</a>`;
+    else if (tk.cls === "a" || tk.cls === "A") html += `<a class="${tk.cls === "a" ? "t-url" : "t-surl"}" href="${esc(tk.url)}" target="_blank" rel="noopener">${inner}</a>`;
+    else html += `<span class="t-${tk.cls}">${inner}</span>`;
+  }
+  if (col >= 0 && !placed) html += `<span class="cu"> </span>`;
+  return html;
+}
+const lines = n => B[n].lines();
+
+/* ---------- cursor ---------- */
+function pos(n = state.cur){ return n ? (state.pos[n] ||= {l: 0, c: 0, want: 0}) : {l: 0, c: 0, want: 0}; }
+function curText(){ return plain(lines(state.cur)[pos().l] || ""); }
+function clampCol(){ const p = pos(); p.c = Math.max(0, Math.min(p.want, curText().length - 1)); }
+function setLine(l){ if (!state.cur) return; const p = pos(); p.l = Math.max(0, Math.min(l, lines(state.cur).length - 1)); clampCol(); }
+function setCol(c){ if (!state.cur) return; const p = pos(); p.want = c; clampCol(); p.want = p.c; }
+function firstNonBlank(){ return (curText().match(/^\s*/) || [""])[0].length; }
+function wordFwd(){
+  const L = lines(state.cur); const p = pos(); let l = p.l, c = p.c + 1;
+  while (l < L.length){
+    const t = plain(L[l]);
+    for (; c < t.length; c++) if (/\S/.test(t[c]) && (c === 0 || /\s/.test(t[c - 1]))) { p.l = l; setCol(c); return; }
+    l++; c = 0;
+  }
+}
+function wordBack(){
+  const L = lines(state.cur); const p = pos(); let l = p.l, c = p.c - 1;
+  while (l >= 0){
+    const t = plain(L[l]); if (c === undefined || c >= t.length) c = t.length - 1;
+    for (; c >= 0; c--) if (/\S/.test(t[c]) && (c === 0 || /\s/.test(t[c - 1]))) { p.l = l; setCol(c); return; }
+    l--; c = undefined;
+  }
+}
+
+/* ---------- rendering ---------- */
+function renderBuf(opts = {}){
+  const el = $("#buf");
+  const L = state.cur ? lines(state.cur) : [""];
+  const p = pos();
+  const signs = state.cur && B[state.cur].signs ? B[state.cur].signs() : {};
+  const showCursor = state.mode === "NORMAL" || state.mode === "HARPOON";
+  let html = `<div class="lines">`;
+  L.forEach((ln, i) => {
+    const nr = i === p.l ? i + 1 : Math.abs(i - p.l);
+    const sg = signs[i];
+    html += `<div class="ln real" data-i="${i}"><span class="sg ${sg ? sg[1] : ""}">${sg ? sg[0] : ""}</span><span class="nr${i === p.l ? " cnr" : ""}">${nr}</span><span class="tx">${render(ln, i === p.l && showCursor ? p.c : -1)}</span></div>`;
+  });
+  const rows = Math.ceil(el.clientHeight / LH());
+  for (let i = L.length; i < rows; i++) html += `<div class="ln eob">~</div>`;
+  el.innerHTML = html + "</div>";
+  $("#intro").hidden = !!state.cur;
+  if (state.cur) scrollFix(opts.center);
+}
+function scrollFix(center){
+  const el = $("#buf"), lh = LH(), row = el.querySelector(".ln[data-i='" + pos().l + "']");
+  if (!row) return;
+  const top = row.offsetTop, h = el.clientHeight, so = Math.min(8 * lh, (h - lh) / 2);
+  if (center) el.scrollTop = top - h / 2 + lh / 2;
+  else if (top - el.scrollTop < so) el.scrollTop = top - so;
+  else if (el.scrollTop + h - (top + lh) < so) el.scrollTop = top + lh + so - h;
+}
+function rulerPct(){
+  if (!state.cur) return "All";
+  const el = $("#buf"), n = lines(state.cur).length, lh = LH();
+  const vis = Math.floor(el.clientHeight / lh);
+  if (n <= vis) return "All";
+  const first = Math.round(el.scrollTop / lh);
+  if (first <= 0) return "Top";
+  if (first + vis >= n) return "Bot";
+  return Math.round(first / (n - vis) * 100) + "%";
+}
+function renderStatus(){
+  const p = pos();
+  const name = state.cur ? title(state.cur) : "[No Name]";
+  const mod = state.cur === "coffee.lua" && state.touched ? " [+]" : "";
+  const lvl = Math.round(state.coffee);
+  const harp = state.harpoon.map((f, i) => {
+    const s = f.startsWith(".") ? f : f.replace(/\.\w+$/, "");
+    return `<button class="hp${f === state.cur ? " on" : ""}" data-harp="${i}" title="${f}">${i + 1}<span class="hn"> ${s}</span></button>`;
+  }).join("");
+  const walking = $(".walker");
+  const ruler = state.cur ? `${p.l + 1},${p.c + 1}` : "0,0-1";
+  $("#status").innerHTML =
+    `<span>${esc(name)}${mod}</span><span class="fill"></span>${harp}` +
+    `<span class="hide-sm">${walking ? "        " : "=^-.-^= z"}</span>` +
+    `<span class="${lvl < 20 ? "low" : ""}" title="coffee level">☕ ${lvl}%</span>` +
+    `<span>${ruler.padEnd(10)}${rulerPct().padStart(3)}</span>`;
+  if (walking) $("#status").appendChild(walking);
+}
+function renderIntro(){
+  const items = [
+    ["e about.md", ":e about.md<Enter>", "to read about me", "about me"],
+    ["e projects.lua", ":e projects.lua<Enter>", "for things I've built", "projects"],
+    ["e bootdev.md", ":e bootdev.md<Enter>", "for my boot.dev journey", "boot.dev"],
+    ["Monkeytype", ":Monkeytype<Enter>", "to race me", "typing test"],
+    ["e contact.md", ":e contact.md<Enter>", "to say hello", "contact"],
+    ["Harpoon", "<C-e>", "for harpoon", "harpoon"],
+    ["Oil", "-", "to browse files", "all files"],
+    ["help", ":help<Enter>", "if you are new!", "help"],
+    ["q!", ":q!<Enter>", "to exit", "exit"],
+  ];
+  $("#intro").innerHTML = `
+    <div class="in-name">Fabian Scheid</div>
+    <div class="in-sub">developer at refine studio, germany</div>
+    <div class="in-sub">coffee, cats and kanagawa wave</div>
+    <div class="in-list">${items.map(([c, k, d, m]) => `<button data-cmd="${c}"><span class="d">type  </span><span class="k">${esc(k.padEnd(24))}</span><span class="d">${d}</span><span class="mlbl">${m}</span></button>`).join("")}</div>`;
+}
+function renderCmd(){
+  const m = $("#msg");
+  if (state.mode === "INSERT"){ m.textContent = "-- INSERT --"; m.className = "mode"; }
+  $("#showcmd").textContent = (state.count + state.seq).replace(/ /g, "<Space>").slice(-10);
+}
+function renderAll(opts){ renderTabs(); renderBuf(opts); renderStatus(); renderCmd(); }
+
+function msg(text, err = false){ const m = $("#msg"); m.textContent = text; m.className = err ? "err" : ""; }
+const err = t => msg(t, true);
+
+/* ---------- fidget ---------- */
+function notify(text, src = "", level = "", ms = 3200){
+  const d = document.createElement("div");
+  d.className = "fn " + level;
+  d.innerHTML = `<span class="fm">${esc(text)}</span>  <span class="fs">${esc(src)}</span>`;
+  $("#fidget").appendChild(d);
+  if (ms) setTimeout(() => fadeOut(d), ms);
+  return d;
+}
+function fadeOut(d){ d.classList.add("out"); setTimeout(() => d.remove(), 450); }
+function lspProgress(){
+  if (state.lsp) return; state.lsp = true;
+  const d = notify("Loading workspace", "lua_ls", "", 0), fm = d.querySelector(".fm");
+  const frames = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; let i = 0;
+  const iv = reduced ? null : setInterval(() => fm.textContent = "Loading workspace " + frames[i++ % frames.length], 80);
+  setTimeout(() => { clearInterval(iv); fm.textContent = "Loading workspace ✔"; setTimeout(() => fadeOut(d), 1500); }, 1400);
+}
+
+/* ---------- actions ---------- */
+function openBuf(n, line){
+  if (!B[n]) return;
+  if (!state.open.includes(n)) state.open.push(n);
+  let t = state.tabs.indexOf(n);
+  if (t < 0){ state.tabs.push(n); t = state.tabs.length - 1; }
+  setTab(t, false);
+  if (line != null){ setLine(line); setCol(0); }
+  closeFloats();
+  $("#buf").scrollTop = 0;
+  renderAll();
+  if (n !== "oil"){
+    const L = lines(n);
+    msg(`"${title(n)}" ${L.length}L, ${L.map(plain).join("\n").length}B`);
+  } else msg("");
+  if (B[n].ft === "lua") lspProgress();
+  if (n === "monkeytype.lua") loadMT();
+}
+function openOil(){
+  const from = state.cur;
+  openBuf("oil");
+  const i = FILES.indexOf(from);
+  if (i >= 0){ setLine(i); renderAll(); }
+  pos().want = 2; clampCol(); renderBuf();
+}
+function setTab(i, render = true){
+  state.tab = Math.max(0, Math.min(i, state.tabs.length - 1));
+  state.cur = state.tabs[state.tab];
+  if (render){ closeFloats(); renderAll(); msg(""); }
+}
+function closeTab(i = state.tab){
+  if (state.tabs.length === 1) return err("E784: Cannot close last tab page");
+  const n = state.tabs[i];
+  state.tabs.splice(i, 1);
+  if (n && !state.tabs.includes(n)) state.open.splice(state.open.indexOf(n), 1);
+  setTab(i < state.tab || state.tab >= state.tabs.length ? state.tab - (i < state.tab ? 1 : 0) : state.tab);
+}
+function closeBuf(n = state.cur){ const i = state.tabs.indexOf(n); closeTab(i < 0 ? state.tab : i); }
+function cycle(d){ setTab((state.tab + d + state.tabs.length) % state.tabs.length); }
+function openIntro(){ const i = state.tabs.indexOf(null); if (i >= 0) setTab(i); else { state.tabs.push(null); setTab(state.tabs.length - 1); } }
+function renderTabs(){
+  $("#tabline").innerHTML = state.tabs.map((b, i) => {
+    const label = b === null ? "intro" : b === "oil" ? "oil" : b === "gitlog" ? "git log" : b;
+    const mod = b === "coffee.lua" && state.touched ? "+ " : "";
+    return `<span class="tab${i === state.tab ? " on" : ""}"><button data-tab="${i}">${mod}${esc(label)}</button>` +
+      (state.tabs.length > 1 && b !== null ? `<button class="tcl" data-tabclose="${i}" aria-label="Close ${esc(label)}">×</button>` : "") + `</span>`;
+  }).join("");
+  $("#tabline .on")?.scrollIntoView({inline: "nearest", block: "nearest"});
+}
+function openLine(){
+  if (!state.cur) return;
+  const raw = lines(state.cur)[pos().l] || "";
+  if (state.cur === "oil"){ const f = plain(raw).slice(2); if (B[f]) openBuf(f); return; }
+  const u = urlOf(raw);
+  if (u && u.startsWith("buf:")) return openBuf(u.slice(4));
+  if (u) window.open(u, "_blank", "noopener"); else err("E447: No link under cursor");
+}
+function harpoonSelect(i){
+  const f = state.harpoon[i];
+  if (f) openBuf(f); else notify(`no mark at ${i + 1}`, "harpoon");
+}
+function harpoonAdd(){
+  if (!state.cur || state.cur === "oil") return;
+  if (state.harpoon.includes(state.cur)) return notify(`${state.cur} is already marked`, "harpoon");
+  state.harpoon.push(state.cur); renderStatus();
+  notify(`added ${state.cur} as mark ${state.harpoon.length}`, "harpoon");
+}
+function refill(){
+  state.coffee = 100; state.cups++; state.warned = false;
+  notify(state.cups === 1 ? "brewed a fresh cup" : `cup number ${state.cups}. no judgement.`, "coffee.lua");
+  renderAll();
+}
+function walkCat(){
+  if (reduced){ msg("the cat is asleep in the statusline. better not."); return; }
+  if (state.zen){ msg("the cat doesn't do zen mode."); return; }
+  if ($(".walker")) { msg("the cat is already out."); return; }
+  const w = document.createElement("span");
+  w.className = "walker"; w.textContent = "=^..^=";
+  w.addEventListener("animationend", () => { w.remove(); renderStatus(); notify("the cat went back to sleep", ".cat"); });
+  $("#status").appendChild(w); renderStatus();
+  msg("meow.");
+}
+function setTheme(name){ state.theme = name; document.documentElement.dataset.theme = THEMES[name]; }
+function zen(level){
+  state.zen = state.zen === level ? 0 : level;
+  const n = $("#nvim");
+  n.classList.toggle("zen", !!state.zen);
+  n.classList.toggle("nonu", state.zen === 2);
+  n.classList.toggle("nocc", state.zen === 2);
+  renderAll();
+}
+function hardtimeOk(k){
+  if (!state.hardtime) return true;
+  const h = state.hard, now = performance.now();
+  if (h.k === k && now - h.t < 1000) h.n++; else h.n = 1;
+  h.k = k; h.t = now;
+  if (h.n > 3){ h.n = 0; notify(`You pressed the ${k} key too soon!`, "hardtime", "warn", 2200); return false; }
+  return true;
+}
+const ro = () => err("E45: 'readonly' option is set (it's a website)");
+const nomod = () => err("E21: Cannot make changes, 'modifiable' is off");
+
+/* ---------- commands ---------- */
+function runCmd(raw){
+  const s = raw.trim(); if (!s) return;
+  if (/^\d+$/.test(s)){ if (state.cur){ setLine(+s - 1); setCol(firstNonBlank()); renderAll(); } return; }
+  const [c, ...rest] = s.split(/\s+/); const arg = rest.join(" ");
+  const pages = {about:"about.md", projects:"projects.lua", contact:"contact.md"};
+  const C = {
+    q: () => err("E37: No write since last change (add ! to override)"),
+    "q!": quit, "qa!": quit, "qall!": quit,
+    w: ro, wq: ro, x: ro, wa: ro, "w!": ro,
+    e: () => {
+      if (!arg) return err("E32: No file name");
+      if (arg === "." || arg === "./") return openOil();
+      const f = Object.keys(B).find(k => k === arg) || FILES.find(k => k.startsWith(arg));
+      f ? openBuf(f) : err(`E484: Can't open file ${arg}`);
+    },
+    h: () => openBuf("help.txt", arg ? tagLine(arg) : 0),
+    coffee: refill, cat: walkCat,
+    colorscheme: () => {
+      if (!arg) return msg(state.theme);
+      if (THEMES[arg]){ setTheme(arg); return msg(""); }
+      err(`E185: Cannot find color scheme '${arg}'`);
+    },
+    checkhealth: () => openBuf("checkhealth"),
+    bd: () => closeBuf(), bn: () => cycle(1), bp: () => cycle(-1),
+    ls: () => msg(state.open.map((b, i) => `${i + 1}${b === state.cur ? " %a" : "   "} "${title(b)}"`).join("   ") || "no buffers"),
+    Oil: openOil,
+    Monkeytype: startTest,
+    Git: () => /^log\b/.test(arg) ? openBuf("gitlog") : err(`fugitive: only :Git log works on this website`),
+    Telescope: () => { const p = PICKERS[arg || "builtin"]; p ? p() : err(`[telescope.run_command]: Unknown command: ${arg}`); },
+    Harpoon: openHarpoon,
+    ZenMode: () => zen(1),
+    Hardtime: () => {
+      state.hardtime = arg === "enable" ? true : arg === "disable" ? false : !state.hardtime;
+      notify(state.hardtime ? "Hardtime enabled" : "Hardtime disabled", "hardtime");
+    },
+    VimBeGood: () => notify("you're already good. hardtime agrees, mostly.", "VimBeGood"),
+    Lazy: () => notify("no updates. everything is fine.", "lazy.nvim"),
+    LspRestart: () => { state.lsp = false; lspProgress(); },
+    intro: openIntro,
+    tabnew: () => arg ? runCmd("e " + arg) : (state.tabs.push(null), setTab(state.tabs.length - 1)),
+    tabn: () => cycle(1), tabp: () => cycle(-1), tabc: () => closeTab(), tabo: () => { state.tabs = [state.cur]; state.open = state.cur ? [state.cur] : []; setTab(0); },
+  };
+  C.MonkeyType = C.Monkeytype; C.monkeytype = C.Monkeytype; C.G = C.Git; C.qa = C.q; C.quit = C.q; C.edit = C.e; C.help = C.h; C.colo = C.colorscheme; C.bdelete = C.bd; C.tabnext = C.tabn; C.tabprevious = C.tabp; C.tabclose = C.tabc; C.tabonly = C.tabo; C.bnext = C.bn; C.bprev = C.bp; C.buffers = C.ls;
+  if (C[c]) return C[c]();
+  if (pages[c]) return openBuf(pages[c]);
+  err(`E492: Not an editor command: ${s}`);
+}
+function tagLine(t){
+  const L = lines("help.txt").map(plain);
+  const i = L.findIndex(l => l.includes(`*${t}*`) || l.includes(`*fabian-${t}*`));
+  return i < 0 ? 0 : i;
+}
+
+/* ---------- cmdline ---------- */
+const cmdin = $("#cmdin");
+let hIdx = 0;
+function openCmd(){
+  state.mode = "COMMAND"; $("#cmd").classList.add("active"); $("#cmd .p").textContent = ":";
+  cmdin.value = ""; hIdx = state.history.length; cmdin.focus(); renderBuf(); renderCmd();
+}
+function closeCmd(){
+  if (state.mode !== "COMMAND") return;
+  state.mode = "NORMAL"; $("#cmd").classList.remove("active"); $("#cmd .p").textContent = "";
+  cmdin.blur(); renderBuf();
+}
+const COMPLETE = {
+  e: () => FILES, edit: () => FILES,
+  colorscheme: () => Object.keys(THEMES), colo: () => Object.keys(THEMES),
+  Telescope: () => Object.keys(PICKERS), Hardtime: () => ["toggle", "enable", "disable"],
+  Git: () => ["log"], G: () => ["log"],
+  "": () => ["Monkeytype", "Git", "checkhealth", "coffee", "cat", "colorscheme", "help", "Telescope", "Oil", "Harpoon", "ZenMode", "Hardtime", "VimBeGood", "Lazy"],
+};
+cmdin.addEventListener("keydown", e => {
+  e.stopPropagation();
+  if (e.key === "Enter"){
+    const v = cmdin.value; if (v.trim()) state.history.push(v);
+    closeCmd(); msg(""); runCmd(v);
+  } else if (e.key === "Escape" || (e.ctrlKey && e.key === "c") || (e.key === "Backspace" && !cmdin.value)){
+    closeCmd(); msg("");
+  } else if (e.key === "Tab"){
+    const v = cmdin.value, m = v.match(/^(\S+) (\S*)$/);
+    const [head, part] = m ? [m[1], m[2]] : ["", v];
+    const opts = (COMPLETE[head] || (() => []))().filter(o => o.startsWith(part));
+    if (opts.length) cmdin.value = (head ? head + " " : "") + opts[0];
+  } else if (e.key === "ArrowUp" && state.history.length){
+    hIdx = Math.max(0, hIdx - 1); cmdin.value = state.history[hIdx];
+  } else if (e.key === "ArrowDown"){
+    hIdx = Math.min(state.history.length, hIdx + 1); cmdin.value = state.history[hIdx] || "";
+  } else return;
+  e.preventDefault();
+});
+cmdin.addEventListener("blur", closeCmd);
+$("#cmd").addEventListener("click", () => { if (state.mode === "NORMAL") openCmd(); });
+
+/* ---------- telescope ---------- */
+let P = null;
+function fuzzy(q, s){
+  if (!q) return {score: 0, hits: []};
+  const low = s.toLowerCase(), hits = []; let j = 0;
+  for (let i = 0; i < low.length && j < q.length; i++) if (low[i] === q[j]){ hits.push(i); j++; }
+  if (j < q.length) return null;
+  return {score: (hits[hits.length - 1] - hits[0]) + hits[0] * 0.1, hits};
+}
+function openPicker(o){
+  closeFloats();
+  P = {preview: true, ...o, idx: 0, list: [], prevTheme: state.theme};
+  state.mode = "INSERT";
+  $("#tele").hidden = false;
+  $("#ttitle").textContent = P.title;
+  $("#ptitle").textContent = P.previewTitle || "Preview";
+  $(".tp").classList.toggle("nopreview", !P.preview);
+  $("#tin").value = "";
+  filterP(); renderBuf(); renderCmd();
+  $("#tin").focus();
+}
+function filterP(){
+  const q = $("#tin").value.toLowerCase().replace(/\s/g, "");
+  P.list = P.items.map((it, i) => ({it, i, m: fuzzy(q, it.label)})).filter(x => x.m).sort((a, b) => a.m.score - b.m.score || a.i - b.i);
+  P.idx = Math.min(P.idx, Math.max(0, P.list.length - 1));
+  renderP();
+}
+function renderP(){
+  const ul = $("#tlist");
+  ul.innerHTML = P.list.map((x, i) => {
+    const lbl = [...x.it.label].map((ch, k) => x.m.hits.includes(k) ? `<span class="hl">${esc(ch)}</span>` : esc(ch)).join("");
+    return `<li class="${i === P.idx ? "sel" : ""}" data-t="${i}"><span class="car">${i === P.idx ? "> " : "  "}</span>${lbl}</li>`;
+  }).reverse().join("");
+  $("#tcnt").textContent = `${P.list.length} / ${P.items.length}`;
+  ul.querySelector(".sel")?.scrollIntoView({block: "nearest"});
+  const cur = P.list[P.idx];
+  $("#tprev").innerHTML = cur && cur.it.preview ? cur.it.preview().map(l => render(l)).join("\n") : "";
+  if (cur && P.onMove) P.onMove(cur.it);
+}
+function closePicker(cancel){
+  if (!P) return;
+  if (cancel && P.onCancel) P.onCancel(P);
+  $("#tele").hidden = true; P = null;
+  state.mode = "NORMAL"; msg(""); renderAll();
+}
+function pickP(i){
+  const x = P && P.list[i]; const run = x && x.it.run;
+  P.onCancel = null; closePicker(); if (run) run();
+}
+$("#tin").addEventListener("input", () => { P.idx = 0; filterP(); });
+$("#tin").addEventListener("keydown", e => {
+  e.stopPropagation();
+  const k = e.key;
+  if (k === "Escape" || (e.ctrlKey && k === "c")) closePicker(true);
+  else if (k === "Enter") pickP(P.idx);
+  else if (k === "ArrowUp" || (e.ctrlKey && k === "p")){ P.idx = Math.min(P.idx + 1, P.list.length - 1); renderP(); }
+  else if (k === "ArrowDown" || (e.ctrlKey && k === "n")){ P.idx = Math.max(P.idx - 1, 0); renderP(); }
+  else return;
+  e.preventDefault();
+});
+$("#tele").addEventListener("click", e => {
+  const li = e.target.closest("[data-t]");
+  if (li) pickP(+li.dataset.t);
+  else if (e.target.id === "tele") closePicker(true);
+});
+
+const fileItem = f => ({label: f, preview: () => lines(f), run: () => openBuf(f)});
+const PICKERS = {
+  git_files: () => openPicker({title: "Git Files", items: FILES.map(fileItem)}),
+  find_files: () => openPicker({title: "Find Files", items: FILES.filter(f => !f.startsWith(".")).map(fileItem)}),
+  buffers: () => openPicker({title: "Buffers", items: state.open.map((b, i) => ({label: `${i + 1} ${title(b)}`, preview: () => lines(b), run: () => openBuf(b)}))}),
+  help_tags: () => {
+    const L = lines("help.txt");
+    const items = L.map((l, i) => [plain(l).match(/\*([^*]+)\*/), i]).filter(([m]) => m).map(([m, i]) => ({label: m[1], preview: () => L.slice(i), run: () => openBuf("help.txt", i)}));
+    openPicker({title: "Help Tags", items});
+  },
+  current_buffer_fuzzy_find: () => {
+    if (!state.cur) return err("E37: no buffer to search");
+    const L = lines(state.cur);
+    openPicker({title: "Current Buffer Fuzzy", preview: false, items: L.map((l, i) => ({label: `${String(i + 1).padStart(3)}  ${plain(l)}`, run: () => { openBuf(state.cur); setLine(i); renderAll({center: true}); }})).filter(x => x.label.trim().length > 5)});
+  },
+  colorscheme: () => openPicker({
+    title: "Change Colorscheme", previewTitle: "coffee.lua",
+    items: ["kanagawa", "kanagawa-dragon", "kanagawa-lotus", "rose-pine-moon"].map(t => ({label: t, preview: () => lines("coffee.lua"), run: () => setTheme(t)})),
+    onMove: it => document.documentElement.dataset.theme = THEMES[it.label],
+    onCancel: p => setTheme(p.prevTheme),
+  }),
+  sessionizer: () => openPicker({
+    title: "tmux-sessionizer", previewTitle: "projects.lua",
+    items: PROJECTS.map(p => ({label: `~/personal/${p.name}`, preview: () => projectLines(p).map(l => l.slice(4)), run: () => window.open(`${GH}/${p.name}`, "_blank", "noopener")})),
+  }),
+};
+PICKERS.builtin = () => openPicker({title: "Telescope Builtin", preview: false, items: Object.keys(PICKERS).filter(k => k !== "builtin" && k !== "sessionizer").map(k => ({label: k, run: () => PICKERS[k]()}))});
+
+/* ---------- typing test ---------- */
+const WORDS = "the be of and a to in he have it that for they with as not on she at by this we you do but from or which one would all will there say who make when can more if no man out other so what time up go about than into could state only new year some take come these know see use get like then first any work now may such give over think most even find day also after way many must look before great back through long where much should well people down own just because good each those feel seem how high too place little world very still nation hand old life tell write become here show house both between need mean call develop under last right move thing general school never same another begin while number part turn real leave might want point form off child few small since against ask late home interest large person end open public follow during present without again hold around possible head consider word program problem however lead system set order eye plan run keep face fact group play stand increase early course change help line".split(" ");
+let MTT = null;
+function startTest(){
+  closeFloats();
+  if (MTT) clearInterval(MTT.iv);
+  const w = []; for (let i = 0; i < 60; i++) w.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
+  MTT = {text: w.join(" "), typed: "", keys: 0, errs: 0, start: 0, len: 15, iv: null, done: false};
+  state.mode = "INSERT";
+  $("#mt").hidden = false;
+  $("#mtin").value = "";
+  renderMT(); renderBuf(); renderStatus(); renderCmd();
+  $("#mtin").focus();
+  loadMT();
+}
+function renderMT(){
+  if (!MTT) return;
+  const {text, typed} = MTT;
+  let h = "";
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (i === typed.length && !MTT.done) h += `<span class="cu" id="mtcaret">${esc(ch)}</span>`;
+    else if (i >= typed.length) h += `<span class="u">${esc(ch)}</span>`;
+    else if (typed[i] === ch) h += esc(ch);
+    else h += ch === " " ? `<span class="wsp"> </span>` : `<span class="w">${esc(ch)}</span>`;
+  }
+  const box = $("#mtwords"); box.innerHTML = h;
+  const c = $("#mtcaret"); if (c) box.scrollTop = Math.max(0, c.offsetTop - box.offsetTop - LH());
+  const pb = mtPB("time", "15");
+  const pbTxt = pb ? `fabian's 15s pb is ${Math.round(pb.wpm)} wpm` : MT.state === "loading" ? "loading fabian's pb..." : "";
+  if (MTT.done){
+    const {wpm, acc} = MTT.result, me = pb ? Math.round(pb.wpm) : null, won = me !== null && wpm > me;
+    const info = $("#mtinfo");
+    info.className = won ? "won" : "";
+    info.innerHTML = me === null ? `${wpm} wpm  ${acc}% acc<span class="dim">  15s, english</span>`
+      : won ? `you won.<span class="dim">  ${acc}% acc, 15s, english</span>`
+      : wpm > me * 0.8 ? `so close.<span class="dim">  ${acc}% acc, 15s, english</span>`
+      : `not this time.<span class="dim">  ${acc}% acc, 15s, english</span>`;
+    if (me !== null){
+      const max = Math.max(wpm, me, 1), W = 30;
+      const bar = v => { const f = Math.max(1, Math.round(v / max * W)); return "█".repeat(f) + "░".repeat(W - f); };
+      const diff = wpm - me;
+      $("#mtwords").innerHTML = `<div class="mtres"><span class="lbl">you     </span><span class="${won ? "you" : "lost"}">${bar(wpm)}</span> ${String(wpm).padStart(3)} wpm
+<span class="lbl">fabian  </span><span class="me">${bar(me)}</span> ${String(me).padStart(3)} wpm
+<span class="dim t-c">${diff > 0 ? `+${diff} wpm. that's a new record on this website.` : diff === 0 ? "a tie. that doesn't count, sorry." : `${-diff} wpm short.`}</span></div>`;
+    }
+    if (won){
+      const body = `I typed ${wpm} wpm (${acc}% acc) in the 15s test on your website. Your pb was ${me} wpm.`;
+      const href = `mailto:info@fabianmail.com?subject=${encodeURIComponent("I beat your monkeytype pb")}&body=${encodeURIComponent(body)}`;
+      $("#mthint").innerHTML = `<a class="mtsend" href="${href}">send fabian the proof</a>  <Tab> again  <Esc> quit`.replace("<Tab>", "&lt;Tab&gt;").replace("<Esc>", "&lt;Esc&gt;");
+    } else $("#mthint").textContent = "<Tab> try again  <Esc> quit";
+  } else {
+    $("#mtinfo").className = "";
+    const left = MTT.start ? Math.max(0, Math.ceil(MTT.len - (performance.now() - MTT.start) / 1000)) : MTT.len;
+    $("#mtinfo").innerHTML = `${left}<span class="dim">  ${MTT.start ? "" : "start typing"}</span>`;
+    $("#mthint").textContent = (pbTxt ? pbTxt + "  " : "") + "<Tab> restart  <Esc> quit";
+  }
+}
+function endTest(){
+  if (!MTT || MTT.done) return;
+  clearInterval(MTT.iv);
+  const secs = Math.min(MTT.len, (performance.now() - MTT.start) / 1000) || MTT.len;
+  let correct = 0; for (let i = 0; i < MTT.typed.length; i++) if (MTT.typed[i] === MTT.text[i]) correct++;
+  MTT.result = {
+    wpm: Math.round(correct / 5 / (secs / 60)),
+    acc: MTT.keys ? Math.round((MTT.keys - MTT.errs) / MTT.keys * 100) : 0,
+  };
+  MTT.done = true;
+  renderMT();
+  const pb = mtPB("time", "15");
+  if (pb && MTT.result.wpm > Math.round(pb.wpm)){
+    notify(`new record: ${MTT.result.wpm} wpm`, "monkeytype", "", 5000);
+    walkCat();
+  }
+}
+function closeTest(){
+  if (!MTT) return;
+  clearInterval(MTT.iv); MTT = null;
+  $("#mt").hidden = true; $("#mtin").blur();
+  state.mode = "NORMAL"; msg(""); renderAll();
+}
+$("#mtin").addEventListener("input", () => {
+  if (!MTT || MTT.done){ $("#mtin").value = MTT ? MTT.typed : ""; return; }
+  if (!MTT.start){
+    MTT.start = performance.now();
+    MTT.iv = setInterval(() => { if (performance.now() - MTT.start >= MTT.len * 1000) endTest(); else renderMT(); }, 200);
+  }
+  const v = $("#mtin").value.slice(0, MTT.text.length);
+  for (let i = MTT.typed.length; i < v.length; i++){ MTT.keys++; if (v[i] !== MTT.text[i]) MTT.errs++; }
+  MTT.typed = v;
+  if (v.length >= MTT.text.length) endTest(); else renderMT();
+});
+$("#mtin").addEventListener("keydown", e => {
+  e.stopPropagation();
+  if (e.key === "Escape" || (e.ctrlKey && e.key === "c")){ e.preventDefault(); closeTest(); }
+  else if (e.key === "Tab"){ e.preventDefault(); startTest(); }
+  else if (e.key === "Enter") e.preventDefault();
+});
+$("#mt").addEventListener("click", e => { if (e.target.id === "mt") closeTest(); else $("#mtin").focus(); });
+
+/* ---------- harpoon menu ---------- */
+let hSel = 0, hPending = "";
+function openHarpoon(){
+  closeFloats();
+  state.mode = "HARPOON"; hSel = Math.max(0, state.harpoon.indexOf(state.cur));
+  $("#harp").hidden = false; renderHarpoon();
+}
+function renderHarpoon(){
+  $("#hlist").innerHTML = state.harpoon.length
+    ? state.harpoon.map((f, i) => `<li class="${i === hSel ? "sel" : ""}" data-h="${i}"><span class="nr">${i === hSel ? i + 1 : Math.abs(i - hSel)}</span><span>${i === hSel ? `<span class="cu">${esc(f[0])}</span>${esc(f.slice(1))}` : esc(f)}</span></li>`).join("")
+    : `<li><span class="nr">1</span><span class="cu"> </span></li>`;
+}
+function closeHarpoon(){ if (state.mode !== "HARPOON") return; $("#harp").hidden = true; state.mode = "NORMAL"; renderStatus(); }
+function harpoonKey(e){
+  const k = e.key; e.preventDefault();
+  if (hPending === "d"){ hPending = ""; if (k === "d" && state.harpoon.length){ state.harpoon.splice(hSel, 1); hSel = Math.min(hSel, state.harpoon.length - 1); renderHarpoon(); renderStatus(); } return; }
+  if (k === "j" || k === "ArrowDown") hSel = Math.min(hSel + 1, state.harpoon.length - 1);
+  else if (k === "k" || k === "ArrowUp") hSel = Math.max(hSel - 1, 0);
+  else if (k === "Enter"){ closeHarpoon(); return harpoonSelect(hSel); }
+  else if (k === "q" || k === "Escape" || (e.ctrlKey && (k === "c" || k === "e"))) return closeHarpoon();
+  else if (k === "d") hPending = "d";
+  else if (/^[1-9]$/.test(k)){ closeHarpoon(); return harpoonSelect(+k - 1); }
+  renderHarpoon();
+}
+$("#harp").addEventListener("click", e => {
+  const li = e.target.closest("[data-h]");
+  if (li){ closeHarpoon(); harpoonSelect(+li.dataset.h); }
+  else if (e.target.id === "harp") closeHarpoon();
+});
+function closeFloats(){ if (P) closePicker(true); closeHarpoon(); if (MTT) closeTest(); }
+
+/* ---------- quit to zsh ---------- */
+const PROMPT = "fabian@macbook ~ % ";
+function quit(){
+  closeFloats();
+  const sh = $("#shell");
+  sh.hidden = false; $("#twin").textContent = "[fabian] 1:zsh*";
+  sh.innerHTML = `<div><span class="pr">${PROMPT}</span>nvim</div><div class="dim">type nvim to go back</div><div id="shout"></div><div class="row"><span class="pr">${PROMPT}</span><input id="shin" aria-label="Shell" autocomplete="off" autocapitalize="off" spellcheck="false"></div>`;
+  const inp = $("#shin"); inp.focus();
+  inp.addEventListener("keydown", e => {
+    e.stopPropagation();
+    if (e.key !== "Enter") return;
+    const v = inp.value.trim(), [c, ...a] = v.split(/\s+/); inp.value = "";
+    let out = "";
+    if (["nvim", "vim", "vi", "v"].includes(c)) return reopen();
+    if (!c) out = "";
+    else if (c === "ls") out = FILES.join("  ");
+    else if (c === "cat"){
+      const f = a[0];
+      out = !f ? "" : B[f] && FILES.includes(f) ? lines(f).map(plain).join("\n") : `cat: ${f}: No such file or directory`;
+    }
+    else if (c === "clear"){ $("#shout").innerHTML = ""; return; }
+    else if (c === "exit") out = "nice try. this tmux pane is load-bearing.";
+    else if (c === "tmux-sessionizer"){ reopen(); return PICKERS.sessionizer(); }
+    else if (c === "whoami") out = "fabian";
+    else out = `zsh: command not found: ${c}`;
+    $("#shout").insertAdjacentHTML("beforeend", `<div><span class="pr">${PROMPT}</span>${esc(v)}</div>${out ? `<div>${esc(out)}</div>` : ""}`);
+    $("#shell").scrollTop = 1e9;
+  });
+}
+function reopen(){
+  $("#shell").hidden = true; $("#twin").textContent = "[fabian] 1:nvim*";
+  state.open = []; state.tabs = [null]; state.tab = 0; state.cur = null; state.mode = "NORMAL";
+  renderAll(); msg("");
+  notify("welcome back", "nvim");
+}
+$("#shell").addEventListener("click", () => $("#shin")?.focus());
+
+/* ---------- normal mode ---------- */
+const MAP = {
+  "j": n => { if (hardtimeOk("j")) setLine(pos().l + n); },
+  "k": n => { if (hardtimeOk("k")) setLine(pos().l - n); },
+  "h": n => { if (hardtimeOk("h")) setCol(pos().c - n); },
+  "l": n => { if (hardtimeOk("l")) setCol(pos().c + n); },
+  "<ArrowDown>": n => setLine(pos().l + n),
+  "<ArrowUp>": n => setLine(pos().l - n),
+  "<ArrowLeft>": n => setCol(pos().c - n),
+  "<ArrowRight>": n => setCol(pos().c + n),
+  "w": n => { for (let i = 0; i < n; i++) wordFwd(); },
+  "b": n => { for (let i = 0; i < n; i++) wordBack(); },
+  "0": () => setCol(0),
+  "^": () => setCol(firstNonBlank()),
+  "$": () => { pos().want = Infinity; clampCol(); },
+  "gg": (n, had) => { setLine(had ? n - 1 : 0); setCol(firstNonBlank()); },
+  "G": (n, had) => { setLine(had ? n - 1 : Infinity); setCol(firstNonBlank()); },
+  "zz": () => scrollFix(true),
+  "gt": n => cycle(n), "gT": n => cycle(-n),
+  "gx": openLine, "<Enter>": openLine,
+  "-": openOil, " sf": openOil,
+  " vf": () => PICKERS.find_files(), " cb": () => PICKERS.buffers(),
+  " /": () => PICKERS.current_buffer_fuzzy_find(), " vh": () => PICKERS.help_tags(),
+  " zz": () => zen(1), " zZ": () => zen(2), " a": harpoonAdd,
+  " zl": () => runCmd("LspRestart"),
+  ":": openCmd, "?": () => openBuf("help.txt"),
+  "Q": () => {},
+  "u": () => msg("Already at oldest change"),
+  "ZZ": ro,
+  "i": nomod, "a": nomod, "o": nomod, "O": nomod, "A": nomod, "I": nomod, "x": nomod, "p": nomod, "dd": nomod, "cc": nomod,
+};
+const NO_RERENDER = new Set(["gt", "gT", ":", "-", " sf", " vf", " cb", " /", " vh", " zz", " zZ", "gx", "<Enter>", "?"]);
+function normalKey(e){
+  const k = e.key;
+  const tok = k.length === 1 ? k : `<${k}>`;
+  if (k === "Escape"){ state.seq = ""; state.count = ""; renderCmd(); return; }
+  if (k.length > 1 && !MAP[tok]) return;
+  if (!state.seq && (/^[1-9]$/.test(k) || (k === "0" && state.count))){ state.count += k; renderCmd(); e.preventDefault(); return; }
+  if (state.seq && k.length > 1){ state.seq = ""; }
+  state.seq += tok;
+  const s = state.seq;
+  if (MAP[s]){
+    const had = !!state.count, n = parseInt(state.count || "1");
+    state.seq = ""; state.count = "";
+    e.preventDefault();
+    const moving = !NO_RERENDER.has(s);
+    if (!state.cur && moving && !["Q", "u", "ZZ"].includes(s) && !(s in {i:1,a:1,o:1,O:1,A:1,I:1,x:1,p:1,dd:1,cc:1})){ renderCmd(); return; }
+    MAP[s](n, had);
+    if (moving && state.mode === "NORMAL"){ renderBuf({center: s === "zz"}); renderStatus(); }
+    renderCmd();
+    return;
+  }
+  if (Object.keys(MAP).some(x => x.startsWith(s))){ e.preventDefault(); renderCmd(); return; }
+  state.seq = ""; state.count = ""; renderCmd();
+}
+function ctrlKey(e){
+  const k = e.key.toLowerCase();
+  const half = Math.max(1, Math.floor($("#buf").clientHeight / LH() / 2));
+  const act = {
+    p: () => PICKERS.git_files(),
+    e: openHarpoon,
+    t: () => harpoonSelect(0), g: () => harpoonSelect(1), b: () => harpoonSelect(2), n: () => harpoonSelect(3),
+    d: () => { setLine(pos().l + half); renderBuf({center: true}); renderStatus(); },
+    u: () => { setLine(pos().l - half); renderBuf({center: true}); renderStatus(); },
+    f: () => PICKERS.sessionizer(),
+    c: () => { if (window.getSelection().toString()) return false; msg("Type  :qa!  and press <Enter> to abandon all changes and exit Nvim"); },
+  }[k];
+  if (!act) return;
+  if (act() !== false) e.preventDefault();
+}
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input")) return;
+  if (!$("#shell").hidden){ $("#shin")?.focus(); return; }
+  if (e.metaKey || e.altKey) return;
+  if (state.mode === "HARPOON") return harpoonKey(e);
+  if (state.mode !== "NORMAL") return;
+  if (e.ctrlKey) return ctrlKey(e);
+  normalKey(e);
+});
+
+/* ---------- mouse ---------- */
+function chWidth(){
+  const s = document.createElement("span");
+  s.textContent = "0".repeat(20); s.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+  $("#buf").appendChild(s); const w = s.getBoundingClientRect().width / 20; s.remove(); return w;
+}
+document.addEventListener("click", e => {
+  const bl = e.target.closest("[data-buf]");
+  if (bl){ e.preventDefault(); return openBuf(bl.dataset.buf); }
+  const tcl = e.target.closest("[data-tabclose]"), tab = e.target.closest("[data-tab]");
+  if (tcl) return closeTab(+tcl.dataset.tabclose);
+  if (tab) return setTab(+tab.dataset.tab);
+  const harp = e.target.closest("[data-harp]"), cmd = e.target.closest("[data-cmd]"), ln = e.target.closest("#buf .ln.real");
+  if (harp) return harpoonSelect(+harp.dataset.harp);
+  if (cmd) return runCmd(cmd.dataset.cmd);
+  if (ln && state.cur && state.mode === "NORMAL"){
+    const tx = ln.querySelector(".tx");
+    setLine(+ln.dataset.i);
+    setCol(Math.floor((e.clientX - tx.getBoundingClientRect().left) / chWidth()));
+    if (state.cur === "oil" && !e.target.closest("a")) return openLine();
+    renderBuf(); renderStatus();
+  }
+});
+$("#tabline").addEventListener("auxclick", e => { const t = e.target.closest("[data-tab]"); if (e.button === 1 && t){ e.preventDefault(); closeTab(+t.dataset.tab); } });
+$("#buf").addEventListener("scroll", () => renderStatus(), {passive: true});
+
+/* ---------- clocks ---------- */
+function tick(){
+  const d = new Date();
+  const day = d.toLocaleDateString("en-US", {weekday: "short"}), mon = d.toLocaleDateString("en-US", {month: "short"});
+  const t = d.toTimeString().slice(0, 8);
+  $("#clock").textContent = ` ${day} ${mon} ${String(d.getDate()).padStart(2)}  ${t}  `;
+}
+setInterval(tick, 1000); tick();
+
+setInterval(() => {
+  state.coffee = Math.max(0, state.coffee - 1); state.touched = true;
+  if (state.coffee < 20 && !state.warned){ state.warned = true; notify("coffee is running low, try :coffee", "caffeine", "warn", 5000); }
+  renderTabs();
+  if (state.mode === "NORMAL" && (state.cur === "coffee.lua" || state.cur === "checkhealth")) renderBuf();
+  renderStatus();
+}, 12000);
+
+addEventListener("resize", () => renderBuf());
+
+setTheme("kanagawa");
+renderIntro();
+renderAll();
+notify(`loaded in ${Math.max(1, Math.round(performance.now() - t0))}ms`, "fabian.nvim");
+</script>
+</body>
+</html>
