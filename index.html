@@ -346,7 +346,7 @@ const B = {
     "courses on {a:buf:bootdev.md|boot.dev} (put the cursor here, press gx).",
     "",
     "{h|## Setup}",
-    "{m|-} Neovim with kanagawa, telescope, harpoon and oil",
+    "{m|-} Neovim, telescope, harpoon and oil",
     "{m|-} Ghostty and tmux, sessions via tmux-sessionizer",
     "{m|-} macOS with AeroSpace and SketchyBar",
     "",
@@ -674,7 +674,7 @@ function renderIntro(){
   $("#intro").innerHTML = `
     <div class="in-name">Fabian Scheid</div>
     <div class="in-sub">developer at refine studio, germany</div>
-    <div class="in-sub">coffee, cats and kanagawa wave</div>
+    <div class="in-sub">coffee, cats</div>
     <div class="in-list">${items.map(([c, k, d, m]) => `<button data-cmd="${c}"><span class="d">type  </span><span class="k">${esc(k.padEnd(24))}</span><span class="d">${d}</span><span class="mlbl">${m}</span></button>`).join("")}</div>`;
 }
 function renderCmd(){
