@@ -334,6 +334,7 @@ const B = {
     "{h|# Fabian Scheid}",
     "",
     "Developer at {b|**Refine Studio**}, based in Germany.",
+    "I'm a husband and father of three.",
     "I like coffee, cats, and code that reads well.",
     "",
     "{h|## What I do}",
@@ -675,7 +676,7 @@ function renderIntro(){
   $("#intro").innerHTML = `
     <div class="in-name">Fabian Scheid</div>
     <div class="in-sub">developer at refine studio, germany</div>
-    <div class="in-sub">coffee, cats</div>
+    <div class="in-sub">coffee, cats, husband, father of three </div>
     <div class="in-list">${items.map(([c, k, d, m]) => `<button data-cmd="${c}"><span class="d">type  </span><span class="k">${esc(k.padEnd(24))}</span><span class="d">${d}</span><span class="mlbl">${m}</span></button>`).join("")}</div>`;
 }
 function renderCmd(){
