@@ -145,7 +145,14 @@ a{color:inherit}
 #showcmd{color:var(--fg);min-width:11ch;text-align:left}
 
 /* fidget */
-#fidget{position:absolute;right:1ch;bottom:.3rem;text-align:right;pointer-events:none;z-index:3}
+#fidget{position:absolute;right:1ch;top:.3rem;text-align:right;pointer-events:none;z-index:3}
+/* ai-klammer: the avatar float sits bottom right above the statusline, its bubble right above it */
+#klammer{position:absolute;right:1ch;bottom:0;z-index:2;margin:0;font:inherit;line-height:var(--lh);white-space:pre;color:var(--fg);background:var(--bg);pointer-events:none}
+#kbubble{position:absolute;right:1ch;bottom:calc(var(--lh) * 10);z-index:2;padding:0 1ch;white-space:pre;border:1px solid var(--border);border-radius:6px;background:var(--float);color:var(--fg);pointer-events:none;transition:opacity .4s}
+#kbubble[hidden]{display:none}
+#kbubble.out{opacity:0}
+#kbubble .kb-size{visibility:hidden}
+#kbubble .kb-text{position:absolute;left:1ch;top:0}
 .fn{white-space:pre;transition:opacity .4s;background:var(--bg);display:inline-block;padding-left:1ch}
 #fidget>.fn{display:block;margin-left:auto;width:max-content}
 .fn.out{opacity:0}
@@ -221,6 +228,7 @@ input:focus-visible{outline:none}
   body{font-size:13.5px}
   :root{--lh:21px}
   .hn,.hide-sm{display:none!important}
+  #klammer,#kbubble{display:none!important}
   #status .show-sm{display:block}
   #status .sl-name{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .hp{padding:0 .4ch!important}

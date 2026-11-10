@@ -22,4 +22,6 @@ addEventListener("resize", () => renderBuf());
 setTheme("kanagawa");
 renderIntro();
 renderAll();
+klammerShow();
+setTimeout(() => klammerSay("Hello, there 👋"), 400);
 notify(`loaded in ${Math.max(1, Math.round(performance.now() - t0))}ms`, "fabian.nvim");
