@@ -49,7 +49,7 @@ function klammerEyes(){
 // One empty row of headroom on top, so it can hop without moving its box.
 // Each eye sits in a 1ch box: ◐ and ◑ can come from a wider fallback font and would tear the wire apart.
 function renderKlammer(){
-  const eyes = [...klammerEyes()].map(ch => ch === " " ? " " : `<span class="ke">${esc(ch)}</span>`).join("");
+  const eyes = [...klammerEyes()].map(ch => ch === " " ? " " : `<span class="ke${"◐◑".includes(ch) ? " round" : ""}"><span>${esc(ch)}</span></span>`).join("");
   const rows = KLAMMER_BODY.map(l => l === null ? eyes : esc(l));
   // the free column right of the head, where the z drifts up
   if (KL.asleep && KL.snore === 1) rows[1] = rows[1].slice(0, 4) + "z";

@@ -152,6 +152,9 @@ a{color:inherit}
    sitting right on top of the avatar, one cell in from the right edge. */
 #klammer{position:absolute;right:1ch;bottom:0;z-index:2;margin:0;font:inherit;line-height:var(--lh);white-space:pre;color:var(--com);background:var(--bg);pointer-events:none}
 #klammer .ke{display:inline-block;width:1ch;text-align:center}
+/* ◐ ◑ draw bigger than the text, like in Ghostty; scaled, so the wire keeps its spacing. Tune --eye-size. */
+#klammer{--eye-size:1.45}
+#klammer .ke.round>span{display:inline-block;transform:scale(var(--eye-size))}
 /* #kbubble is the float's outer cells (the border row and column included), .kb-box the border line,
    drawn through the middle of those cells like a terminal draws ╭─╮ │ ╰─╯ */
 #kbubble{position:absolute;right:1ch;bottom:calc(var(--lh) * 10);z-index:2;padding:calc(var(--lh) / 2) .5ch;background:var(--bg);color:var(--fg);white-space:pre;pointer-events:none;transition:opacity .4s}
