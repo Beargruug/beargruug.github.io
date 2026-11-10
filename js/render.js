@@ -27,7 +27,8 @@ function scrollFix(center){
   else if (el.scrollTop + h - (top + lh) < so) el.scrollTop = top + lh + so - h;
 }
 /* ---------- statusline: lualine, theme = "kanagawa", default sections ---------- */
-// | a: mode > b: branch, diff > c: filename      x: harpoon, cat, coffee, encoding, filetype < y: progress < z: location |
+// | a: mode > b: branch, diff > c: filename      x: harpoon, cat, coffee, fileformat, filetype < y: progress < z: location |
+// Harpoon, cat and coffee are website extras: the harpoon numbers are the mouse navigation.
 // Colors per mode live in css/style.css under "statusline".
 
 const LUALINE_MODE = {NORMAL: "normal", HARPOON: "normal", INSERT: "insert", COMMAND: "command"};
@@ -49,6 +50,16 @@ function gitDiff(){
     .map(([sym, n, cls]) => `<span class="${cls}">${sym}${n}</span>`)
     .join(" ");
 }
+
+// Nerd Font icons, redrawn as inline SVG / plain glyphs (the web font has no Nerd Font glyphs).
+const SL_ICON = {
+  // nf-dev-git_branch, in front of the branch name
+  branch: `<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="5" r="1.8"/><path d="M4.5 5.3v5.4M11.5 6.8c0 3-7 2.2-7 4"/></svg>`,
+  // lualine "fileformat" for unix: Tux
+  unix: `<svg class="ic" viewBox="0 0 16 16" aria-label="unix"><mask id="tuxm"><rect width="16" height="16" fill="#fff"/><ellipse cx="8" cy="10.8" rx="2.4" ry="3.2" fill="#000"/><circle cx="6.8" cy="4.2" r=".7" fill="#000"/><circle cx="9.2" cy="4.2" r=".7" fill="#000"/></mask><g fill="currentColor" mask="url(#tuxm)"><ellipse cx="8" cy="4.6" rx="3" ry="3.4"/><ellipse cx="8" cy="10.2" rx="4.6" ry="4.8"/></g><g fill="currentColor"><ellipse cx="4.8" cy="15" rx="2.4" ry="1"/><ellipse cx="11.2" cy="15" rx="2.4" ry="1"/></g></svg>`,
+};
+// nvim-web-devicons stand-ins for lualine "filetype"
+const FT_ICON = {lua: "☾", markdown: "#", oil: "≡", git: "±", help: "?", checkhealth: "+", text: "·"};
 
 // lualine "progress": based on the cursor line, not the scroll position
 function cursorProgress(){
@@ -88,7 +99,7 @@ function renderStatus(){
     // left: a > b > c
     `<span class="sl-a sl-mode"></span>` +
     right("ab hide-sm") +
-    `<span class="sl-b hide-sm">main</span>` +
+    `<span class="sl-b hide-sm">${SL_ICON.branch} main</span>` +
     (diff ? cs("sl-b hide-sm") + `<span class="sl-b hide-sm">${diff}</span>` : "") +
     right("bc hide-sm") +
     right("ac show-sm") +
@@ -98,8 +109,8 @@ function renderStatus(){
     `<span class="sl-harp">${harp}</span>` +
     cs("hide-sm") + `<span class="hide-sm">${walking ? "        " : "=^-.-^= z"}</span>` +
     cs() + `<span class="${lvl < 20 ? "low" : ""}" title="coffee level">☕ ${lvl}%</span>` +
-    cs("hide-sm") + `<span class="hide-sm">utf-8</span>` +
-    (ft ? cs("hide-sm") + `<span class="hide-sm">${ft}</span>` : "") +
+    cs("hide-sm") + `<span class="hide-sm">${SL_ICON.unix}</span>` +
+    (ft ? cs("hide-sm") + `<span class="hide-sm">${FT_ICON[ft] || "·"} ${ft}</span>` : "") +
     left("cb hide-sm") +
     `<span class="sl-b hide-sm">${cursorProgress()}</span>` +
     left("ba hide-sm") +
