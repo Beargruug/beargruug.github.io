@@ -313,6 +313,27 @@ async function loadMT(){
 }
 const mtPB = (mode, k) => MT.state === "ok" ? bestPB(MT.data.personalBests?.[mode]?.[k]) : null;
 
+const GHS = {state: "idle"};
+async function loadGH(){
+  if (GHS.state === "loading" || GHS.state === "ok") return;
+  GHS.state = "loading";
+  const d = notify("fetching stars", "github", "", 0), fm = d.querySelector(".fm");
+  try {
+    const r = await fetch("https://api.github.com/users/Beargruug/repos?per_page=100");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const repos = await r.json();
+    if (!Array.isArray(repos)) throw new Error("unexpected response");
+    const stars = new Map(repos.map(x => [x.name, x.stargazers_count]));
+    for (const p of PROJECTS) if (stars.has(p.name)) p.stars = stars.get(p.name);
+    GHS.state = "ok"; fm.textContent = "fetching stars ✔";
+  } catch (e){
+    GHS.state = "error";
+    fm.textContent = "couldn't reach the api"; d.classList.add("warn");
+  }
+  setTimeout(() => fadeOut(d), 1800);
+  if (state.cur === "projects.lua" && state.mode === "NORMAL") renderAll();
+}
+
 /* ---------- buffers ---------- */
 const field = (k, v, w = 5) => `{v|${k}}${" ".repeat(Math.max(0, w - k.length))} {o|=} ${v},`;
 function projectLines(p){
@@ -725,6 +746,7 @@ function openBuf(n, line){
   } else msg("");
   if (B[n].ft === "lua") lspProgress();
   if (n === "monkeytype.lua") loadMT();
+  if (n === "projects.lua") loadGH();
 }
 function openOil(){
   const from = state.cur;
@@ -992,10 +1014,10 @@ const PICKERS = {
     onMove: it => document.documentElement.dataset.theme = THEMES[it.label],
     onCancel: p => setTheme(p.prevTheme),
   }),
-  sessionizer: () => openPicker({
+  sessionizer: () => (loadGH(), openPicker({
     title: "tmux-sessionizer", previewTitle: "projects.lua",
     items: PROJECTS.map(p => ({label: `~/personal/${p.name}`, preview: () => projectLines(p).map(l => l.slice(4)), run: () => window.open(`${GH}/${p.name}`, "_blank", "noopener")})),
-  }),
+  })),
 };
 PICKERS.builtin = () => openPicker({title: "Telescope Builtin", preview: false, items: Object.keys(PICKERS).filter(k => k !== "builtin" && k !== "sessionizer").map(k => ({label: k, run: () => PICKERS[k]()}))});
 
