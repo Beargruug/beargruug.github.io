@@ -1,6 +1,6 @@
-/* kanagawa wave, with ColorMyPencils (Normal bg = none) on ghostty's #000000 */
+/* kanagawa wave on #1F1F28 (sumiInk3). Telescope floats stay #000000, like TelescopeNormal in ColorMyPencils */
 [data-theme="kanagawa"]{
-  --bg:#000000; --fg:#DCD7BA; --gutter:#2A2A37; --nr:#54546D; --cnr:#FF9E3B; --cc:#2A2A37; --eob:#1F1F28;
+  --bg:#1F1F28; --fg:#DCD7BA; --gutter:#2A2A37; --nr:#54546D; --cnr:#FF9E3B; --cc:#2A2A37; --eob:#363646;
   --tl:#16161D; --tlfg:#938AA9; --tls:#2A2A37; --tlsfg:#C8C093; --tlf:#1F1F28;
   --slbg:#16161D; --slfg:#C8C093; --float:#000000; --border:#54546D; --title:#938AA9; --sel:#223249; --cursor:#e0def4;
   --com:#727169; --kw:#957FB8; --ret:#FF5D62; --fn:#7E9CD8; --str:#98BB6C; --num:#D27E99; --fld:#E6C384;
@@ -146,13 +146,20 @@ a{color:inherit}
 
 /* fidget */
 #fidget{position:absolute;right:1ch;top:.3rem;text-align:right;pointer-events:none;z-index:3}
-/* ai-klammer: the avatar float sits bottom right above the statusline, its bubble right above it */
-#klammer{position:absolute;right:1ch;bottom:0;z-index:2;margin:0;font:inherit;line-height:var(--lh);white-space:pre;color:var(--fg);background:var(--bg);pointer-events:none}
-#kbubble{position:absolute;right:1ch;bottom:calc(var(--lh) * 10);z-index:2;padding:0 1ch;white-space:pre;border:1px solid var(--border);border-radius:6px;background:var(--float);color:var(--fg);pointer-events:none;transition:opacity .4s}
+/* ai-klammer, as the plugin draws it with your ColorMyPencils (Normal and NormalFloat have bg = "none"):
+   the avatar float is AiKlammerAvatar -> Comment, bottom right above the statusline;
+   the bubble is AiKlammerBubble -> NormalFloat for text and border, border = "rounded", no padding,
+   sitting right on top of the avatar, one cell in from the right edge. */
+#klammer{position:absolute;right:1ch;bottom:0;z-index:2;margin:0;font:inherit;line-height:var(--lh);white-space:pre;color:var(--com);background:var(--bg);pointer-events:none}
+#klammer .ke{display:inline-block;width:1ch;text-align:center}
+/* #kbubble is the float's outer cells (the border row and column included), .kb-box the border line,
+   drawn through the middle of those cells like a terminal draws ╭─╮ │ ╰─╯ */
+#kbubble{position:absolute;right:1ch;bottom:calc(var(--lh) * 10);z-index:2;padding:calc(var(--lh) / 2) .5ch;background:var(--bg);color:var(--fg);white-space:pre;pointer-events:none;transition:opacity .4s}
 #kbubble[hidden]{display:none}
 #kbubble.out{opacity:0}
+#kbubble .kb-box{position:relative;border:1px solid currentColor;border-radius:.5ch / calc(var(--lh) / 2);padding:calc(var(--lh) / 2 - 1px) calc(.5ch - 1px)}
 #kbubble .kb-size{visibility:hidden}
-#kbubble .kb-text{position:absolute;left:1ch;top:0}
+#kbubble .kb-text{position:absolute;left:calc(.5ch - 1px);top:calc(var(--lh) / 2 - 1px)}
 .fn{white-space:pre;transition:opacity .4s;background:var(--bg);display:inline-block;padding-left:1ch}
 #fidget>.fn{display:block;margin-left:auto;width:max-content}
 .fn.out{opacity:0}
@@ -215,8 +222,8 @@ input:focus-visible{outline:none}
 #shell .dim{color:var(--com)}
 
 /* tmux */
-/* tmux-dotbar: bg "default" (ghostty's black), session left, windows absolute-centre, clock right */
-#tmux{display:grid;grid-template-columns:1fr auto 1fr;height:var(--lh);background:#000000;color:#475266;white-space:pre;flex:none;overflow:hidden}
+/* tmux-dotbar: bg "default" (the terminal's #1F1F28 whatever the nvim theme), session left, windows absolute-centre, clock right */
+#tmux{display:grid;grid-template-columns:1fr auto 1fr;height:var(--lh);background:#1F1F28;color:#475266;white-space:pre;flex:none;overflow:hidden}
 #tsess,#clock{padding:0 1ch}
 #tsess{color:#565B66}
 /* window-status-format ' #W ', separator ' • ': current window #BFBDB6, others #475266 */
