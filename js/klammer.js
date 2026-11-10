@@ -2,7 +2,6 @@
    Ported from lua/ai_klammer/ui/avatar.lua and bubble.lua in Beargruug/ai-klammer.nvim. */
 
 const KLAMMER_EYES = {
-    neutral: "@  @ ",
     blink: "-  - ",
     thinking: "o  o ",
     annoyed: ">  < ",
@@ -31,7 +30,7 @@ const KLAMMER_SLEEP_AFTER = 5 * 60 * 1000;
 
 const KL = {
   blinking: false, hopping: false,
-  gaze: null,                 // "left" | "right" | null when looking straight out
+  gaze: "left",               // "left" | "right": there is no straight-ahead, it always looks to a side
   reaction: null,             // a passing expression, like "surprised" when it wakes up
   reactionToken: null,
   asleep: false, snore: 0,    // snore: 0 quiet, 1 a z beside the head, 2 a Z above it
@@ -44,8 +43,7 @@ const KL = {
 function klammerEyes(){
   if (KL.blinking || KL.asleep) return KLAMMER_EYES.blink;
   if (KL.reaction) return KLAMMER_EYES[KL.reaction];
-  if (KL.gaze) return KLAMMER_EYES[KL.gaze];
-  return KLAMMER_EYES.neutral;
+  return KLAMMER_EYES[KL.gaze];
 }
 
 // One empty row of headroom on top, so it can hop without moving its box.
@@ -82,7 +80,8 @@ function klammerGazeFor(x, width){
 }
 
 function klammerLook(direction){
-  if (direction === KL.gaze) return; // only redraw when the gaze actually changes
+  // the middle third keeps the side it last looked at; only redraw when the gaze actually changes
+  if (!direction || direction === KL.gaze) return;
   KL.gaze = direction;
   renderKlammer();
 }
