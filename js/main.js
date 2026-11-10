@@ -4,7 +4,8 @@ function tick(){
   const d = new Date();
   const day = d.toLocaleDateString("en-US", {weekday: "short"}), mon = d.toLocaleDateString("en-US", {month: "short"});
   const t = d.toTimeString().slice(0, 8);
-  $("#clock").textContent = ` ${day} ${mon} ${String(d.getDate()).padStart(2)}  ${t}  `;
+  // tmux-dotbar status-right-text: " %a %b %e - %H:%M:%S "
+  $("#clock").innerHTML = `<span class="hide-sm">${day} ${mon} ${String(d.getDate()).padStart(2)} - </span>${t}`;
 }
 setInterval(tick, 1000); tick();
 

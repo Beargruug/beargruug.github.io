@@ -9,7 +9,7 @@ function openCmd(){
 function closeCmd(){
   if (state.mode !== "COMMAND") return;
   state.mode = "NORMAL"; $("#cmd").classList.remove("active"); $("#cmd .p").textContent = "";
-  cmdin.blur(); renderBuf();
+  cmdin.blur(); renderBuf(); renderCmd();
 }
 const COMPLETE = {
   e: () => FILES, edit: () => FILES,

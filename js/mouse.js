@@ -23,4 +23,3 @@ document.addEventListener("click", e => {
   }
 });
 $("#tabline").addEventListener("auxclick", e => { const t = e.target.closest("[data-tab]"); if (e.button === 1 && t){ e.preventDefault(); closeTab(+t.dataset.tab); } });
-$("#buf").addEventListener("scroll", () => renderStatus(), {passive: true});

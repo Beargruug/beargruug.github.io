@@ -6,6 +6,7 @@
   --com:#727169; --kw:#957FB8; --ret:#FF5D62; --fn:#7E9CD8; --str:#98BB6C; --num:#D27E99; --fld:#E6C384;
   --op:#C0A36E; --const:#FFA066; --spc:#7FB4CA; --head:#7E9CD8;
   --err:#E82424; --warn:#FF9E3B; --ok:#98BB6C; --add:#76946A; --chg:#DCA561;
+  --lu-n:#7E9CD8; --lu-nfg:#16161D; --lu-b:#252535; --lu-c:#2A2A37; --lu-cfg:#DCD7BA; --lu-i:#98BB6C; --lu-cmd:#C0A36E; --lu-bg:#1F1F28;
 }
 [data-theme="dragon"]{
   --bg:#000000; --fg:#c5c9c5; --gutter:#282727; --nr:#625e5a; --cnr:#FF9E3B; --cc:#282727; --eob:#181616;
@@ -14,6 +15,7 @@
   --com:#737c73; --kw:#8992a7; --ret:#c4746e; --fn:#8ba4b0; --str:#8a9a7b; --num:#a292a3; --fld:#c4b28a;
   --op:#9e9b93; --const:#b6927b; --spc:#949fb5; --head:#8ba4b0;
   --err:#E82424; --warn:#FF9E3B; --ok:#87a987; --add:#76946A; --chg:#DCA561;
+  --lu-n:#8ba4b0; --lu-nfg:#0d0c0c; --lu-b:#252535; --lu-c:#282727; --lu-cfg:#c5c9c5; --lu-i:#98BB6C; --lu-cmd:#c4746e; --lu-bg:#181616;
 }
 [data-theme="lotus"]{
   --bg:#f2ecbc; --fg:#545464; --gutter:#e7dba0; --nr:#a09cac; --cnr:#e98a00; --cc:#e7dba0; --eob:#f2ecbc;
@@ -22,6 +24,7 @@
   --com:#8a8980; --kw:#624c83; --ret:#c84053; --fn:#4d699b; --str:#6f894e; --num:#b35b79; --fld:#77713f;
   --op:#836f4a; --const:#cc6d00; --spc:#6693bf; --head:#4d699b;
   --err:#e82424; --warn:#e98a00; --ok:#6f894e; --add:#6e915f; --chg:#de9800;
+  --lu-n:#4d699b; --lu-nfg:#d5cea3; --lu-b:#d7e3d8; --lu-c:#e7dba0; --lu-cfg:#545464; --lu-i:#6f894e; --lu-cmd:#836f4a; --lu-bg:#f2ecbc;
 }
 [data-theme="rosepine"]{
   --bg:#000000; --fg:#e0def4; --gutter:transparent; --nr:#6e6a86; --cnr:#e0def4; --cc:#2a273f; --eob:#232136;
@@ -30,6 +33,7 @@
   --com:#6e6a86; --kw:#3e8fb0; --ret:#3e8fb0; --fn:#ea9a97; --str:#f6c177; --num:#f6c177; --fld:#9ccfd8;
   --op:#908caa; --const:#f6c177; --spc:#9ccfd8; --head:#c4a7e7;
   --err:#eb6f92; --warn:#f6c177; --ok:#9ccfd8; --add:#9ccfd8; --chg:#ea9a97;
+  --lu-n:#7E9CD8; --lu-nfg:#16161D; --lu-b:#252535; --lu-c:#2A2A37; --lu-cfg:#DCD7BA; --lu-i:#98BB6C; --lu-cmd:#C0A36E; --lu-bg:#1F1F28;
 }
 :root{--lh:23px; --gw:6ch}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -91,11 +95,40 @@ a{color:inherit}
 .mlbl{display:none}
 
 /* statusline, cmdline */
-#status{display:flex;height:var(--lh);background:var(--slbg);color:var(--slfg);white-space:pre;overflow:hidden;position:relative;flex:none}
+/* lualine, theme = "kanagawa". a/b/c are lualine's sections; y and z reuse b and a. */
+#status{
+  --a-bg:var(--lu-n); --a-fg:var(--lu-nfg); --b-bg:var(--lu-b); --b-fg:var(--lu-n);
+  display:flex;height:var(--lh);background:var(--lu-c);color:var(--lu-cfg);white-space:pre;overflow:hidden;position:relative;flex:none
+}
+#status[data-mode="insert"]{--a-bg:var(--lu-i); --a-fg:var(--lu-bg); --b-bg:var(--lu-bg); --b-fg:var(--lu-i)}
+#status[data-mode="command"]{--a-bg:var(--lu-cmd); --a-fg:var(--lu-bg); --b-bg:var(--lu-bg); --b-fg:var(--lu-cmd)}
+#status>*{padding:0 1ch;flex:none}
 #status .fill{flex:1}
-#status>*{padding:0 1ch}
+.sl-a{background:var(--a-bg);color:var(--a-fg)}
+.sl-b{background:var(--b-bg);color:var(--b-fg)}
+.sl-add{color:var(--add)}
+.sl-chg{color:var(--chg)}
+.sl-harp{padding:0 .4ch!important}
+/* powerline arrows drawn in CSS: the web font has no powerline glyphs */
+#status .pl,#status .cs{width:1ch;padding:0;position:relative}
+.pl::before,.cs::before{content:"";position:absolute;inset:0;background:var(--from)}
+.pl.r::before{clip-path:polygon(0 0,100% 50%,0 100%)}
+.pl.l::before{clip-path:polygon(100% 0,0 50%,100% 100%)}
+.pl.ab{background:var(--b-bg);--from:var(--a-bg)}
+.pl.bc{background:var(--lu-c);--from:var(--b-bg)}
+.pl.ac{background:var(--lu-c);--from:var(--a-bg)}
+.pl.cb{background:var(--lu-c);--from:var(--b-bg)}
+.pl.ba{background:var(--b-bg);--from:var(--a-bg)}
+.pl.ca{background:var(--lu-c);--from:var(--a-bg)}
+/* thin component separators, in the section's text color */
+.cs{--from:currentColor}
+.cs::before{opacity:.6;clip-path:polygon(100% 0,10% 50%,100% 100%,100% 90%,30% 50%,100% 10%)}
+.cs.sl-b::before{clip-path:polygon(0 0,90% 50%,0 100%,0 90%,70% 50%,0 10%)}
+#status .show-sm{display:none}
+/* harpoon names only when there's room for them next to lualine's sections */
+@media (max-width:1400px){ .hn{display:none} }
 .hp{padding:0 .6ch!important;color:var(--nr)}
-.hp.on{color:var(--slfg);font-weight:700}
+.hp.on{color:var(--lu-cfg);font-weight:700}
 .hp:hover{color:var(--fg)}
 .low{color:var(--err)}
 .walker{position:absolute;top:0;animation:walk 9s linear forwards;padding:0!important}
@@ -174,12 +207,20 @@ input:focus-visible{outline:none}
 #shell .dim{color:var(--com)}
 
 /* tmux */
-#tmux{display:flex;height:var(--lh);background:#333333;color:#5eacd3;white-space:pre;flex:none;overflow:hidden}
+/* tmux-dotbar: bg "default" (ghostty's black), session left, windows absolute-centre, clock right */
+#tmux{display:grid;grid-template-columns:1fr auto 1fr;height:var(--lh);background:#000000;color:#475266;white-space:pre;flex:none;overflow:hidden}
+#tmux>span{padding:0 1ch}
+#tsess{color:#565B66}
+#twin{color:#BFBDB6}
+#clock{color:#565B66;justify-self:end}
 
 @media (max-width:720px){
   body{font-size:13.5px}
   :root{--lh:21px}
-  .hn,.hide-sm{display:none}
+  .hn,.hide-sm{display:none!important}
+  #status .show-sm{display:block}
+  #status .sl-name{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .hp{padding:0 .4ch!important}
   .ln{height:auto;min-height:var(--lh)}
   .ln .tx{white-space:pre-wrap;word-break:break-word}
   .lines{width:100%}

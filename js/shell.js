@@ -4,7 +4,7 @@ const PROMPT = "fabian@macbook ~ % ";
 function quit(){
   closeFloats();
   const sh = $("#shell");
-  sh.hidden = false; $("#twin").textContent = "[fabian] 1:zsh*";
+  sh.hidden = false; $("#twin").textContent = "zsh";
   sh.innerHTML = `<div><span class="pr">${PROMPT}</span>nvim</div><div class="dim">type nvim to go back</div><div id="shout"></div><div class="row"><span class="pr">${PROMPT}</span><input id="shin" aria-label="Shell" autocomplete="off" autocapitalize="off" spellcheck="false"></div>`;
   const inp = $("#shin"); inp.focus();
   inp.addEventListener("keydown", e => {
@@ -29,7 +29,7 @@ function quit(){
   });
 }
 function reopen(){
-  $("#shell").hidden = true; $("#twin").textContent = "[fabian] 1:nvim*";
+  $("#shell").hidden = true; $("#twin").textContent = "nvim";
   state.open = []; state.tabs = [null]; state.tab = 0; state.cur = null; state.mode = "NORMAL";
   renderAll(); msg("");
   notify("welcome back", "nvim");

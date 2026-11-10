@@ -26,32 +26,86 @@ function scrollFix(center){
   else if (top - el.scrollTop < so) el.scrollTop = top - so;
   else if (el.scrollTop + h - (top + lh) < so) el.scrollTop = top + lh + so - h;
 }
-function rulerPct(){
-  if (!state.cur) return "All";
-  const el = $("#buf"), n = lines(state.cur).length, lh = LH();
-  const vis = Math.floor(el.clientHeight / lh);
-  if (n <= vis) return "All";
-  const first = Math.round(el.scrollTop / lh);
-  if (first <= 0) return "Top";
-  if (first + vis >= n) return "Bot";
-  return Math.round(first / (n - vis) * 100) + "%";
+/* ---------- statusline: lualine, theme = "kanagawa", default sections ---------- */
+// | a: mode > b: branch, diff > c: filename      x: harpoon, cat, coffee, encoding, filetype < y: progress < z: location |
+// Colors per mode live in css/style.css under "statusline".
+
+const LUALINE_MODE = {NORMAL: "normal", HARPOON: "normal", INSERT: "insert", COMMAND: "command"};
+
+// Only touches the mode block, so mode switches don't need a full statusline redraw.
+function renderMode(){
+  const mode = LUALINE_MODE[state.mode] || "normal";
+  $("#status").dataset.mode = mode;
+  const el = $("#status .sl-mode");
+  if (el) el.textContent = mode.toUpperCase();
 }
-function renderStatus(){
+
+// lualine "diff": counts this buffer's gutter signs, like gitsigns would
+function gitDiff(){
+  const signs = state.cur && B[state.cur].signs ? Object.values(B[state.cur].signs()) : [];
+  const count = cls => signs.filter(s => s[1] === cls).length;
+  return [["+", count("s-add"), "sl-add"], ["~", count("s-chg"), "sl-chg"]]
+    .filter(([, n]) => n)
+    .map(([sym, n, cls]) => `<span class="${cls}">${sym}${n}</span>`)
+    .join(" ");
+}
+
+// lualine "progress": based on the cursor line, not the scroll position
+function cursorProgress(){
+  if (!state.cur) return "Top";
+  const cur = pos().l + 1, total = lines(state.cur).length;
+  if (cur === 1) return "Top";
+  if (cur === total) return "Bot";
+  return String(Math.floor(cur / total * 100)).padStart(2) + "%";
+}
+
+// lualine "location": "%3l:%-2v"
+function cursorLocation(){
   const p = pos();
+  return state.cur ? `${String(p.l + 1).padStart(3)}:${String(p.c + 1).padEnd(2)}` : "  1:1 ";
+}
+
+function renderStatus(){
   const name = state.cur ? title(state.cur) : "[No Name]";
   const mod = state.cur === "coffee.lua" && state.touched ? " [+]" : "";
   const lvl = Math.round(state.coffee);
+  const ft = state.cur ? B[state.cur].ft : "";
+  const diff = gitDiff();
+  const walking = $(".walker");
+
   const harp = state.harpoon.map((f, i) => {
     const s = f.startsWith(".") ? f : f.replace(/\.\w+$/, "");
     return `<button class="hp${f === state.cur ? " on" : ""}" data-harp="${i}" title="${f}">${i + 1}<span class="hn"> ${s}</span></button>`;
   }).join("");
-  const walking = $(".walker");
-  const ruler = state.cur ? `${p.l + 1},${p.c + 1}` : "0,0-1";
+
+  // Separators: "pl" is a section arrow ("ab" = from section a into b), "cs" a thin component arrow.
+  // On small screens sections b and y are hidden, so "ac"/"ca" arrows join a and c directly.
+  const right = cls => `<span class="pl r ${cls}"></span>`;
+  const left = cls => `<span class="pl l ${cls}"></span>`;
+  const cs = (cls = "") => `<span class="cs ${cls}"></span>`;
+
   $("#status").innerHTML =
-    `<span>${esc(name)}${mod}</span><span class="fill"></span>${harp}` +
-    `<span class="hide-sm">${walking ? "        " : "=^-.-^= z"}</span>` +
-    `<span class="${lvl < 20 ? "low" : ""}" title="coffee level">☕ ${lvl}%</span>` +
-    `<span>${ruler.padEnd(10)}${rulerPct().padStart(3)}</span>`;
+    // left: a > b > c
+    `<span class="sl-a sl-mode"></span>` +
+    right("ab hide-sm") +
+    `<span class="sl-b hide-sm">main</span>` +
+    (diff ? cs("sl-b hide-sm") + `<span class="sl-b hide-sm">${diff}</span>` : "") +
+    right("bc hide-sm") +
+    right("ac show-sm") +
+    `<span class="sl-c sl-name">${esc(name)}${mod}</span>` +
+    `<span class="fill"></span>` +
+    // right: x < y < z
+    `<span class="sl-harp">${harp}</span>` +
+    cs("hide-sm") + `<span class="hide-sm">${walking ? "        " : "=^-.-^= z"}</span>` +
+    cs() + `<span class="${lvl < 20 ? "low" : ""}" title="coffee level">☕ ${lvl}%</span>` +
+    cs("hide-sm") + `<span class="hide-sm">utf-8</span>` +
+    (ft ? cs("hide-sm") + `<span class="hide-sm">${ft}</span>` : "") +
+    left("cb hide-sm") +
+    `<span class="sl-b hide-sm">${cursorProgress()}</span>` +
+    left("ba hide-sm") +
+    left("ca show-sm") +
+    `<span class="sl-a">${cursorLocation()}</span>`;
+  renderMode();
   if (walking) $("#status").appendChild(walking);
 }
 function renderIntro(){
@@ -75,6 +129,7 @@ function renderIntro(){
 function renderCmd(){
   const m = $("#msg");
   if (state.mode === "INSERT"){ m.textContent = "-- INSERT --"; m.className = "mode"; }
+  renderMode();
   $("#showcmd").textContent = (state.count + state.seq).replace(/ /g, "<Space>").slice(-10);
 }
 function renderAll(opts){ renderTabs(); renderBuf(opts); renderStatus(); renderCmd(); }
